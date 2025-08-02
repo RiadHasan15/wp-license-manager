@@ -20,6 +20,7 @@ class WP_Licensing_Manager_Admin_Menu {
         add_action('wp_ajax_wp_licensing_manager_delete_license', array($this, 'ajax_delete_license'));
         add_action('wp_ajax_wp_licensing_manager_save_product', array($this, 'ajax_save_product'));
         add_action('wp_ajax_wp_licensing_manager_delete_product', array($this, 'ajax_delete_product'));
+        add_action('wp_ajax_wp_licensing_manager_get_integration_code', array($this, 'ajax_get_integration_code'));
     }
 
     /**
@@ -321,5 +322,30 @@ class WP_Licensing_Manager_Admin_Menu {
         } else {
             wp_send_json_error('Failed to delete product - it may have existing licenses');
         }
+    }
+
+    /**
+     * AJAX: Get integration code
+     */
+    public function ajax_get_integration_code() {
+        if (!wp_licensing_manager_verify_ajax_nonce('wp_licensing_manager_nonce')) {
+            wp_die('Security check failed');
+        }
+
+        if (!current_user_can('manage_options')) {
+            wp_die('Insufficient permissions');
+        }
+
+        $product_slug = isset($_POST['product_slug']) ? sanitize_text_field($_POST['product_slug']) : '';
+
+        if (empty($product_slug)) {
+            wp_send_json_error('Missing product slug');
+        }
+
+        // Generate the complete integration code using the fixed Updates class
+        $updates = new WP_Licensing_Manager_Updates();
+        $integration_code = $updates->generate_integration_code($product_slug);
+
+        wp_send_json_success($integration_code);
     }
 }
