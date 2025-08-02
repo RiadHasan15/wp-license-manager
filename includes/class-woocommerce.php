@@ -408,18 +408,54 @@ class WP_Licensing_Manager_WooCommerce {
         $license = $this->get_license_for_download($download);
         
         if ($license) {
-            echo '<div class="wc-license-key-cell">';
-            echo '<code class="wc-license-key">' . esc_html($license->license_key) . '</code>';
-            echo '<button type="button" class="button wc-copy-license" data-license="' . esc_attr($license->license_key) . '" title="' . esc_attr__('Copy License Key', 'wp-licensing-manager') . '">' . esc_html__('Copy', 'wp-licensing-manager') . '</button>';
+            echo '<div class="wc-license-key-cell" data-license-id="' . esc_attr($license->id) . '">';
+            
+            // License key with responsive formatting
+            echo '<code class="wc-license-key" data-full-key="' . esc_attr($license->license_key) . '">';
+            echo esc_html($license->license_key);
+            echo '</code>';
+            
+            // Copy button with responsive behavior
+            echo '<button type="button" class="button wc-copy-license" ';
+            echo 'data-license="' . esc_attr($license->license_key) . '" ';
+            echo 'title="' . esc_attr__('Copy License Key', 'wp-licensing-manager') . '" ';
+            echo 'aria-label="' . esc_attr__('Copy license key to clipboard', 'wp-licensing-manager') . '">';
+            echo '<span class="copy-text">' . esc_html__('Copy', 'wp-licensing-manager') . '</span>';
+            echo '<span class="copy-icon" aria-hidden="true">📋</span>';
+            echo '</button>';
+            
+            // Status and expiry information
             echo '<div class="wc-license-status">';
-            echo '<small>' . wp_licensing_manager_format_status($license->status) . '</small>';
+            echo '<small class="license-status-badge" data-status="' . esc_attr($license->status) . '">';
+            echo wp_licensing_manager_format_status($license->status);
+            echo '</small>';
+            
             if (!empty($license->expires_at) && $license->expires_at !== '0000-00-00') {
-                echo '<br><small>' . sprintf(__('Expires: %s', 'wp-licensing-manager'), date_i18n(get_option('date_format'), strtotime($license->expires_at))) . '</small>';
+                echo '<small class="license-expiry">';
+                echo sprintf(__('Expires: %s', 'wp-licensing-manager'), 
+                    '<time datetime="' . esc_attr($license->expires_at) . '">' . 
+                    date_i18n(get_option('date_format'), strtotime($license->expires_at)) . 
+                    '</time>');
+                echo '</small>';
+            } else {
+                echo '<small class="license-expiry license-lifetime">';
+                echo esc_html__('Lifetime License', 'wp-licensing-manager');
+                echo '</small>';
             }
+            
+            // Activation count for mobile view
+            echo '<small class="license-activations" data-activations="' . esc_attr($license->activations) . '" data-max="' . esc_attr($license->max_activations) . '">';
+            echo sprintf(__('Activations: %d/%d', 'wp-licensing-manager'), 
+                (int)$license->activations, 
+                (int)$license->max_activations);
+            echo '</small>';
+            
             echo '</div>';
             echo '</div>';
         } else {
+            echo '<div class="wc-no-license-cell">';
             echo '<span class="wc-no-license">' . esc_html__('No license required', 'wp-licensing-manager') . '</span>';
+            echo '</div>';
         }
     }
 
@@ -588,77 +624,521 @@ class WP_Licensing_Manager_WooCommerce {
             line-height: 1.2;
         }
         
-        /* Downloads table license integration */
+        /* Downloads table license integration - FULLY RESPONSIVE */
         .wc-license-key-cell {
             text-align: left;
+            min-width: 200px;
         }
         
         .wc-license-key {
             display: block;
             background: #f8f9fa;
-            padding: 6px 8px;
-            border-radius: 3px;
-            font-family: monospace;
-            font-size: 12px;
-            margin-bottom: 6px;
+            padding: 8px 10px;
+            border-radius: 4px;
+            font-family: Monaco, Consolas, 'Courier New', monospace;
+            font-size: 13px;
+            margin-bottom: 8px;
             word-break: break-all;
             border: 1px solid #e1e5e9;
+            line-height: 1.4;
+            color: #2c3e50;
+            position: relative;
         }
         
         .wc-license-key-cell .wc-copy-license {
             font-size: 11px;
-            padding: 3px 6px;
-            margin-bottom: 4px;
+            padding: 4px 8px;
+            margin-bottom: 6px;
+            border-radius: 3px;
+            background: #0073aa;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .wc-license-key-cell .wc-copy-license:hover {
+            background: #005a87;
+            transform: translateY(-1px);
+        }
+        
+        .wc-license-status {
+            margin-top: 4px;
         }
         
         .wc-license-status small {
             color: #666;
             font-size: 11px;
-            line-height: 1.3;
+            line-height: 1.4;
+            display: block;
         }
         
         .wc-no-license {
             color: #999;
             font-style: italic;
             font-size: 12px;
+            padding: 8px 0;
         }
         
-        /* Responsive improvements for downloads table */
-        @media (max-width: 768px) {
+        .wc-no-license-cell {
+            text-align: center;
+            padding: 12px 8px;
+        }
+        
+        /* Enhanced license status styling */
+        .license-status-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        
+        .license-status-badge[data-status="active"] {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .license-status-badge[data-status="expired"] {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .license-status-badge[data-status="disabled"] {
+            background: #e2e3e5;
+            color: #383d41;
+            border: 1px solid #d6d8db;
+        }
+        
+        .license-expiry {
+            display: block;
+            margin-top: 3px;
+            color: #666;
+        }
+        
+        .license-lifetime {
+            color: #28a745 !important;
+            font-weight: 500;
+        }
+        
+        .license-activations {
+            display: block;
+            margin-top: 3px;
+            color: #6c757d;
+            font-size: 10px;
+        }
+        
+        /* Copy button enhancements */
+        .wc-copy-license .copy-icon {
+            display: none;
+            margin-left: 3px;
+        }
+        
+        .wc-copy-license:hover .copy-icon {
+            display: inline;
+        }
+        
+        .wc-copy-license:focus {
+            outline: 2px solid #0073aa;
+            outline-offset: 1px;
+        }
+        
+        .wc-copy-license.copy-success {
+            background: #28a745 !important;
+            color: white !important;
+        }
+        
+        .wc-copy-license.copy-error {
+            background: #dc3545 !important;
+            color: white !important;
+        }
+        
+        /* Touch device optimizations */
+        .touch-device .wc-license-key {
+            user-select: all;
+            -webkit-user-select: all;
+            -moz-user-select: all;
+            -ms-user-select: all;
+        }
+        
+        .touch-device .wc-license-key.expanded {
+            white-space: normal;
+            word-break: break-all;
+            background: #fff3cd;
+            border-color: #ffc107;
+        }
+        
+        /* Mobile labels */
+        .mobile-label {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* RESPONSIVE BREAKPOINTS */
+        
+        /* Large Desktop (1200px+) */
+        @media (min-width: 1200px) {
             .wc-license-key {
-                font-size: 10px;
-                padding: 4px 6px;
+                font-size: 14px;
+                padding: 10px 12px;
+            }
+            
+            .wc-license-key-cell .wc-copy-license {
+                font-size: 12px;
+                padding: 5px 10px;
+            }
+            
+            .wc-license-key-cell {
+                min-width: 250px;
+            }
+        }
+        
+        /* Desktop (992px - 1199px) */
+        @media (min-width: 992px) and (max-width: 1199px) {
+            .wc-license-key {
+                font-size: 13px;
+                padding: 8px 10px;
+            }
+            
+            .wc-license-key-cell .wc-copy-license {
+                font-size: 11px;
+                padding: 4px 8px;
+            }
+            
+            .wc-license-key-cell {
+                min-width: 220px;
+            }
+        }
+        
+        /* Tablet (768px - 991px) */
+        @media (min-width: 768px) and (max-width: 991px) {
+            .wc-license-key {
+                font-size: 12px;
+                padding: 7px 9px;
+                margin-bottom: 6px;
             }
             
             .wc-license-key-cell .wc-copy-license {
                 font-size: 10px;
+                padding: 3px 6px;
+                margin-bottom: 4px;
+            }
+            
+            .wc-license-key-cell {
+                min-width: 180px;
+            }
+            
+            .wc-license-status small {
+                font-size: 10px;
+            }
+        }
+        
+        /* Mobile Large (576px - 767px) */
+        @media (min-width: 576px) and (max-width: 767px) {
+            .wc-license-key-cell {
+                min-width: auto;
+                width: 100%;
+            }
+            
+            .wc-license-key {
+                font-size: 11px;
+                padding: 6px 8px;
+                margin-bottom: 5px;
+                word-break: break-all;
+                white-space: pre-wrap;
+            }
+            
+            .wc-license-key-cell .wc-copy-license {
+                font-size: 9px;
+                padding: 3px 5px;
+                margin-bottom: 3px;
+                width: 60px;
+                text-align: center;
+            }
+            
+            .wc-license-status small {
+                font-size: 9px;
+                line-height: 1.3;
+            }
+            
+            /* Stack license info vertically on mobile */
+            .wc-license-key-cell {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+        
+        /* Mobile Small (480px - 575px) */
+        @media (min-width: 480px) and (max-width: 575px) {
+            .wc-license-key {
+                font-size: 10px;
+                padding: 5px 7px;
+                margin-bottom: 4px;
+                letter-spacing: -0.5px;
+            }
+            
+            .wc-license-key-cell .wc-copy-license {
+                font-size: 8px;
                 padding: 2px 4px;
+                width: 50px;
+                height: 24px;
+                line-height: 20px;
+            }
+            
+            .wc-license-status small {
+                font-size: 8px;
+            }
+            
+            .wc-no-license {
+                font-size: 10px;
+            }
+        }
+        
+        /* Mobile Extra Small (up to 479px) */
+        @media (max-width: 479px) {
+            .wc-license-key-cell {
+                padding: 4px !important;
+            }
+            
+            .wc-license-key {
+                font-size: 9px;
+                padding: 4px 6px;
+                margin-bottom: 3px;
+                line-height: 1.3;
+                letter-spacing: -0.3px;
+                max-width: 100%;
+                overflow-wrap: break-word;
+            }
+            
+            .wc-license-key-cell .wc-copy-license {
+                font-size: 7px;
+                padding: 2px 3px;
+                width: 45px;
+                height: 20px;
+                line-height: 16px;
+                border-radius: 2px;
+            }
+            
+            .wc-license-status small {
+                font-size: 7px;
+                line-height: 1.2;
+            }
+            
+            .wc-no-license {
+                font-size: 9px;
+                padding: 4px 0;
+            }
+            
+            /* Compact layout for very small screens */
+            .wc-license-key-cell {
+                display: block;
+            }
+            
+            .wc-license-key-cell .wc-copy-license {
+                margin-top: 2px;
+                margin-bottom: 2px;
+            }
+        }
+        
+        /* WooCommerce responsive table enhancements */
+        @media (max-width: 768px) {
+            /* Ensure downloads table is properly responsive */
+            .woocommerce-MyAccount-orders.account-orders-table {
+                border: 0;
+            }
+            
+            .woocommerce-MyAccount-orders.account-orders-table thead {
+                border: none;
+                clip: rect(0 0 0 0);
+                height: 1px;
+                margin: -1px;
+                overflow: hidden;
+                padding: 0;
+                position: absolute;
+                width: 1px;
+            }
+            
+            .woocommerce-MyAccount-orders.account-orders-table tr {
+                border-bottom: 3px solid #ddd;
+                display: block;
+                margin-bottom: 10px;
+                padding-bottom: 10px;
+            }
+            
+            .woocommerce-MyAccount-orders.account-orders-table td {
+                border: none;
+                border-bottom: 1px solid #eee;
+                display: block;
+                font-size: 13px;
+                text-align: right;
+                padding-left: 50% !important;
+                position: relative;
+            }
+            
+            .woocommerce-MyAccount-orders.account-orders-table td:before {
+                content: attr(data-title) ": ";
+                position: absolute;
+                left: 6px;
+                width: 45%;
+                padding-right: 10px;
+                white-space: nowrap;
+                text-align: left;
+                font-weight: bold;
+                color: #333;
+            }
+            
+            /* License cell specific mobile styling */
+            .woocommerce-MyAccount-orders.account-orders-table td[data-title*="License"] {
+                text-align: left;
+                padding-left: 6px !important;
+            }
+            
+            .woocommerce-MyAccount-orders.account-orders-table td[data-title*="License"]:before {
+                display: block;
+                width: 100%;
+                margin-bottom: 5px;
+                position: static;
+            }
+        }
+        
+        /* Print styles */
+        @media print {
+            .wc-license-key-cell .wc-copy-license {
+                display: none;
+            }
+            
+            .wc-license-key {
+                border: 1px solid #000;
+                background: none;
+                font-weight: bold;
             }
         }
         </style>
         
         <script type="text/javascript">
         jQuery(document).ready(function($) {
-            // Copy functionality for downloads table
+            // Enhanced copy functionality for downloads table
             $(document).on('click', '.wc-copy-license', function(e) {
                 e.preventDefault();
-                var licenseKey = $(this).data('license');
+                var button = $(this);
+                var licenseKey = button.data('license');
+                var copyText = button.find('.copy-text');
+                var originalText = copyText.text();
                 
-                // Create temporary input element
+                // Modern clipboard API with fallback
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(licenseKey).then(function() {
+                        showCopyFeedback(button, copyText, originalText);
+                    }).catch(function() {
+                        fallbackCopyToClipboard(licenseKey, button, copyText, originalText);
+                    });
+                } else {
+                    fallbackCopyToClipboard(licenseKey, button, copyText, originalText);
+                }
+            });
+            
+            // Modern copy method
+            function showCopyFeedback(button, copyText, originalText) {
+                button.addClass('copy-success');
+                copyText.text('<?php echo esc_js(__('Copied!', 'wp-licensing-manager')); ?>');
+                
+                setTimeout(function() {
+                    button.removeClass('copy-success');
+                    copyText.text(originalText);
+                }, 2000);
+            }
+            
+            // Fallback copy method
+            function fallbackCopyToClipboard(text, button, copyText, originalText) {
                 var temp = $('<input>');
                 $('body').append(temp);
-                temp.val(licenseKey).select();
-                document.execCommand('copy');
-                temp.remove();
+                temp.val(text).select();
                 
-                // Update button text temporarily
-                var button = $(this);
-                var originalText = button.text();
-                button.text('<?php echo esc_js(__('Copied!', 'wp-licensing-manager')); ?>');
+                try {
+                    var successful = document.execCommand('copy');
+                    if (successful) {
+                        showCopyFeedback(button, copyText, originalText);
+                    } else {
+                        showCopyError(button, copyText, originalText);
+                    }
+                } catch (err) {
+                    showCopyError(button, copyText, originalText);
+                }
+                
+                temp.remove();
+            }
+            
+            // Error handling
+            function showCopyError(button, copyText, originalText) {
+                button.addClass('copy-error');
+                copyText.text('<?php echo esc_js(__('Failed', 'wp-licensing-manager')); ?>');
+                
                 setTimeout(function() {
-                    button.text(originalText);
+                    button.removeClass('copy-error');
+                    copyText.text(originalText);
                 }, 2000);
-            });
+            }
+            
+            // Touch device optimizations
+            if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+                $('.wc-license-key-cell').addClass('touch-device');
+                
+                // Show license key on touch for very long keys
+                $(document).on('touchstart', '.wc-license-key', function() {
+                    var $this = $(this);
+                    if (!$this.hasClass('expanded')) {
+                        $this.addClass('expanded');
+                        setTimeout(function() {
+                            $this.removeClass('expanded');
+                        }, 3000);
+                    }
+                });
+            }
+            
+            // Responsive table handling
+            function handleResponsiveTable() {
+                var windowWidth = $(window).width();
+                
+                if (windowWidth <= 768) {
+                    // Mobile specific enhancements
+                    $('.wc-license-key-cell').each(function() {
+                        var $cell = $(this);
+                        if (!$cell.find('.mobile-label').length) {
+                            $cell.prepend('<div class="mobile-label"><?php echo esc_js(__('License Key:', 'wp-licensing-manager')); ?></div>');
+                        }
+                    });
+                } else {
+                    // Remove mobile labels on larger screens
+                    $('.mobile-label').remove();
+                }
+            }
+            
+            // Initial call and resize handler
+            handleResponsiveTable();
+            $(window).on('resize', debounce(handleResponsiveTable, 250));
+            
+            // Debounce function for performance
+            function debounce(func, wait) {
+                var timeout;
+                return function executedFunction() {
+                    var context = this;
+                    var args = arguments;
+                    var later = function() {
+                        timeout = null;
+                        func.apply(context, args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
         });
         </script>
         <?php
