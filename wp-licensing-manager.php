@@ -128,7 +128,21 @@ class WP_Licensing_Manager {
         $this->license_manager = new WP_Licensing_Manager_License_Manager();
         $this->product_manager = new WP_Licensing_Manager_Product_Manager();
         $this->activation_manager = new WP_Licensing_Manager_Activation_Manager();
-        $this->api = new WP_Licensing_Manager_API();
+        
+        // Initialize API with error handling
+        try {
+            $this->api = new WP_Licensing_Manager_API();
+            
+            // Debug log for API initialization
+            if (function_exists('error_log')) {
+                error_log('WP Licensing Manager: API class initialized successfully');
+            }
+        } catch (Exception $e) {
+            if (function_exists('error_log')) {
+                error_log('WP Licensing Manager: API initialization failed - ' . $e->getMessage());
+            }
+        }
+        
         $this->woocommerce = new WP_Licensing_Manager_WooCommerce();
         $this->updates = new WP_Licensing_Manager_Updates();
         
