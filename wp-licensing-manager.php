@@ -183,8 +183,18 @@ class WP_Licensing_Manager {
         $default_options = array(
             'default_expiry_days' => 365,
             'default_max_activations' => 1,
-            'email_template_subject' => 'Your License Key',
-            'email_template_body' => 'Thank you for your purchase. Your license key is: {license_key}',
+            'email_template_subject' => 'Your {product_name} License Key',
+            'email_template_body' => 'Hi {customer_name},
+
+Thank you for your purchase of {product_name}!
+
+Your license key is: {license_key}
+Order ID: {order_id}
+
+Please keep this information safe as you will need it to activate your product.
+
+Best regards,
+StackCastle Team',
             'api_version' => '1.0'
         );
         
