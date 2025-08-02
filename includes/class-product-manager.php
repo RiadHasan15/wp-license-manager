@@ -174,6 +174,10 @@ class WP_Licensing_Manager_Product_Manager {
             return false;
         }
 
+        // Always update the updated_at timestamp
+        $update_data['updated_at'] = current_time('mysql');
+        $update_format[] = '%s';
+
         $result = $wpdb->update(
             $wpdb->prefix . 'license_products',
             $update_data,

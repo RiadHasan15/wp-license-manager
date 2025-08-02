@@ -90,13 +90,14 @@ $total_pages = $products_data['pages'];
                 <th scope="col"><?php esc_html_e('Update File', 'wp-licensing-manager'); ?></th>
                 <th scope="col"><?php esc_html_e('Licenses', 'wp-licensing-manager'); ?></th>
                 <th scope="col"><?php esc_html_e('Created', 'wp-licensing-manager'); ?></th>
+                <th scope="col"><?php esc_html_e('Last Update', 'wp-licensing-manager'); ?></th>
                 <th scope="col"><?php esc_html_e('Actions', 'wp-licensing-manager'); ?></th>
             </tr>
         </thead>
         <tbody>
             <?php if (empty($products)): ?>
                 <tr>
-                    <td colspan="7"><?php esc_html_e('No products found.', 'wp-licensing-manager'); ?></td>
+                    <td colspan="8"><?php esc_html_e('No products found.', 'wp-licensing-manager'); ?></td>
                 </tr>
             <?php else: ?>
                 <?php foreach ($products as $product): ?>
@@ -121,6 +122,15 @@ $total_pages = $products_data['pages'];
                             </a>
                         </td>
                         <td><?php echo esc_html(date_i18n(get_option('date_format'), strtotime($product->created_at))); ?></td>
+                        <td>
+                            <?php 
+                            if (!empty($product->updated_at) && $product->updated_at !== $product->created_at) {
+                                echo esc_html(date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($product->updated_at)));
+                            } else {
+                                echo '<span style="color: #666;">' . esc_html__('Never', 'wp-licensing-manager') . '</span>';
+                            }
+                            ?>
+                        </td>
                         <td>
                             <a href="#" class="button button-small edit-product" data-product-id="<?php echo esc_attr($product->id); ?>"><?php esc_html_e('Edit', 'wp-licensing-manager'); ?></a>
                             <a href="#" class="button button-small view-integration" data-product-slug="<?php echo esc_attr($product->slug); ?>"><?php esc_html_e('Integration', 'wp-licensing-manager'); ?></a>
