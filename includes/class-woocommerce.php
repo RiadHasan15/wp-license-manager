@@ -691,15 +691,16 @@ class WP_Licensing_Manager_WooCommerce {
             box-sizing: border-box !important;
         }
         
-        /* Dashboard Navigation - Override theme styles safely */
+        /* Dashboard Navigation - Keep original layout, enhance styling only */
         body.woocommerce-account .woocommerce-MyAccount-navigation,
         .woocommerce-account .woocommerce-MyAccount-navigation {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 12px;
-            padding: 0;
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-            margin-bottom: 30px;
-            overflow: hidden;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            border-radius: 12px !important;
+            padding: 0 !important;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3) !important;
+            margin-bottom: 30px !important;
+            overflow: hidden !important;
+            /* PRESERVE ORIGINAL LAYOUT - Don't override width/float/display */
         }
         
         body.woocommerce-account .woocommerce-MyAccount-navigation ul,
@@ -770,56 +771,9 @@ class WP_Licensing_Manager_WooCommerce {
             box-shadow: inset 4px 0 0 #fff !important;
         }
         
-        /* Add icons to navigation items - Safe icon insertion */
-        body.woocommerce-account .woocommerce-MyAccount-navigation a[href*="dashboard"]:after,
-        .woocommerce-account .woocommerce-MyAccount-navigation a[href*="dashboard"]:after {
-            content: "🏠" !important;
-            margin-left: auto !important;
-            font-size: 16px !important;
-            opacity: 0.8 !important;
-        }
+        /* Navigation items - Clean design without icons */
         
-        body.woocommerce-account .woocommerce-MyAccount-navigation a[href*="orders"]:after,
-        .woocommerce-account .woocommerce-MyAccount-navigation a[href*="orders"]:after {
-            content: "📦" !important;
-            margin-left: auto !important;
-            font-size: 16px !important;
-            opacity: 0.8 !important;
-        }
-        
-        body.woocommerce-account .woocommerce-MyAccount-navigation a[href*="downloads"]:after,
-        .woocommerce-account .woocommerce-MyAccount-navigation a[href*="downloads"]:after {
-            content: "💾" !important;
-            margin-left: auto !important;
-            font-size: 16px !important;
-            opacity: 0.8 !important;
-        }
-        
-        body.woocommerce-account .woocommerce-MyAccount-navigation a[href*="edit-address"]:after,
-        .woocommerce-account .woocommerce-MyAccount-navigation a[href*="edit-address"]:after {
-            content: "📍" !important;
-            margin-left: auto !important;
-            font-size: 16px !important;
-            opacity: 0.8 !important;
-        }
-        
-        body.woocommerce-account .woocommerce-MyAccount-navigation a[href*="edit-account"]:after,
-        .woocommerce-account .woocommerce-MyAccount-navigation a[href*="edit-account"]:after {
-            content: "👤" !important;
-            margin-left: auto !important;
-            font-size: 16px !important;
-            opacity: 0.8 !important;
-        }
-        
-        body.woocommerce-account .woocommerce-MyAccount-navigation a[href*="customer-logout"]:after,
-        .woocommerce-account .woocommerce-MyAccount-navigation a[href*="customer-logout"]:after {
-            content: "🚪" !important;
-            margin-left: auto !important;
-            font-size: 16px !important;
-            opacity: 0.8 !important;
-        }
-        
-        /* Dashboard Content Area - Theme-safe styling */
+        /* Dashboard Content Area - Enhance styling, preserve layout */
         body.woocommerce-account .woocommerce-MyAccount-content,
         .woocommerce-account .woocommerce-MyAccount-content {
             background: white !important;
@@ -827,6 +781,7 @@ class WP_Licensing_Manager_WooCommerce {
             padding: 30px !important;
             box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08) !important;
             border: 1px solid #f0f2f5 !important;
+            /* PRESERVE ORIGINAL LAYOUT - Don't override width/float/display */
         }
         
         /* Page Headers - Theme-safe */
@@ -1043,29 +998,28 @@ class WP_Licensing_Manager_WooCommerce {
             $(".woocommerce-MyAccount-content").addClass("wp-licensing-content-override");
             $(".shop_table_responsive").addClass("wp-licensing-table-override");
             
-            // Force CSS reset on navigation if theme is too aggressive
+            // Enhance styling without breaking layout
             var $nav = $(".woocommerce-MyAccount-navigation");
             if ($nav.length) {
-                // Reset any theme interference
+                // Only enhance visual styling, preserve layout
                 $nav.css({
                     "background": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                     "border-radius": "12px",
                     "box-shadow": "0 10px 30px rgba(102, 126, 234, 0.3)",
-                    "margin-bottom": "30px",
                     "overflow": "hidden"
+                    // DON'T override: width, display, float, position
                 });
                 
-                // Ensure navigation links display properly
+                // Enhance navigation links styling only
                 $nav.find("a").css({
                     "color": "rgba(255, 255, 255, 0.9)",
                     "text-decoration": "none",
-                    "padding": "18px 24px",
-                    "display": "flex",
-                    "align-items": "center"
+                    "padding": "18px 24px"
+                    // DON'T override: display, align-items that break layout
                 });
             }
             
-            // Force table styling if theme overrides it
+            // Enhance table styling without breaking layout
             var $table = $(".shop_table_responsive");
             if ($table.length) {
                 $table.css({
@@ -1073,16 +1027,17 @@ class WP_Licensing_Manager_WooCommerce {
                     "border-radius": "8px",
                     "box-shadow": "0 2px 10px rgba(0, 0, 0, 0.05)",
                     "border": "1px solid #e8ecef"
+                    // DON'T override: width, display, table-layout
                 });
             }
             
-            // Theme compatibility check
+            // Light theme compatibility check (non-intrusive)
             setTimeout(function() {
-                // Check if our styles are being overridden
+                // Only check and enhance, don't force override
                 var navBg = $nav.css("background-image");
                 if (!navBg || navBg === "none") {
-                    // Fallback: inject inline styles as backup
-                    $nav.attr("style", $nav.attr("style") + "; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;");
+                    // Gentle enhancement - preserve layout
+                    $nav.css("background", "linear-gradient(135deg, #667eea 0%, #764ba2 100%)");
                 }
             }, 100);
             
@@ -1475,35 +1430,31 @@ class WP_Licensing_Manager_WooCommerce {
             }
         }
         
-        /* Theme Compatibility Fallbacks */
+        /* Theme Compatibility - Gentle Enhancement Only */
         
-        /* Ensure our styles work even with aggressive theme CSS */
+        /* Style navigation without breaking layout */
         body.woocommerce-account .woocommerce-MyAccount-navigation,
         .woocommerce-account .woocommerce-MyAccount-navigation {
-            all: unset !important;
-            display: block !important;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
             border-radius: 12px !important;
             padding: 0 !important;
             box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3) !important;
             margin-bottom: 30px !important;
             overflow: hidden !important;
+            /* Keep original WooCommerce layout properties */
         }
         
-        /* Force table styling regardless of theme */
+        /* Style table without breaking layout */
         body.woocommerce-account .woocommerce table.shop_table_responsive,
         .woocommerce-account .woocommerce table.shop_table_responsive,
         body.woocommerce-account .shop_table_responsive,
         .woocommerce-account .shop_table_responsive {
-            all: unset !important;
-            display: table !important;
-            width: 100% !important;
             background: white !important;
             border-radius: 8px !important;
             overflow: hidden !important;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
             border: 1px solid #e8ecef !important;
-            border-collapse: collapse !important;
+            /* Keep original table display and width properties */
         }
         
         /* Fallback for very aggressive themes */
@@ -1512,15 +1463,14 @@ class WP_Licensing_Manager_WooCommerce {
             line-height: 1.5 !important;
         }
         
-        /* Additional theme override classes */
+        /* Additional theme enhancement classes - Layout safe */
         .wp-licensing-nav-override {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
             border-radius: 12px !important;
             padding: 0 !important;
-            margin: 0 0 30px 0 !important;
             box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3) !important;
             overflow: hidden !important;
-            list-style: none !important;
+            /* Preserve original layout properties */
         }
         
         .wp-licensing-content-override {
@@ -1529,6 +1479,7 @@ class WP_Licensing_Manager_WooCommerce {
             padding: 30px !important;
             box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08) !important;
             border: 1px solid #f0f2f5 !important;
+            /* Preserve original layout properties */
         }
         
         .wp-licensing-table-override {
@@ -1537,7 +1488,7 @@ class WP_Licensing_Manager_WooCommerce {
             overflow: hidden !important;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
             border: 1px solid #e8ecef !important;
-            width: 100% !important;
+            /* Preserve original width and display properties */
         }
         
         /* Mobile compatibility enhancements */
@@ -1546,14 +1497,17 @@ class WP_Licensing_Manager_WooCommerce {
             font-size: 13px !important;
         }
         
-        /* Ultimate fallback - highest specificity possible */
+        /* Gentle fallback - preserve WooCommerce layout */
         html body.woocommerce-account div.woocommerce-MyAccount-navigation {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            border-radius: 12px !important;
+            /* Only style, don't change layout */
         }
         
         html body.woocommerce-account div.woocommerce-MyAccount-content {
             background: white !important;
             border-radius: 12px !important;
+            /* Only style, don't change layout */
         }
         
         /* Enhanced responsive table for professional dashboard */
