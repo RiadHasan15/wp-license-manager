@@ -29,8 +29,13 @@ class WP_Licensing_Manager_WooCommerce {
         add_filter('woocommerce_product_data_tabs', array($this, 'add_licensing_tab'));
         add_action('woocommerce_product_data_panels', array($this, 'add_licensing_tab_content'));
 
-        // Order completion hook
+        // Order completion hooks
         add_action('woocommerce_order_status_completed', array($this, 'generate_license_on_order_complete'));
+        add_action('woocommerce_order_status_processing', array($this, 'generate_license_on_order_complete'));
+        
+        // Order refund hook
+        add_action('woocommerce_order_status_refunded', array($this, 'disable_licenses_on_refund'));
+        add_action('woocommerce_order_status_cancelled', array($this, 'disable_licenses_on_refund'));
 
         // Customer account hooks
         add_filter('woocommerce_account_menu_items', array($this, 'add_my_licenses_tab'));
@@ -326,6 +331,35 @@ class WP_Licensing_Manager_WooCommerce {
     }
 
     /**
+     * Disable licenses when order is refunded or cancelled
+     *
+     * @param int $order_id
+     */
+    public function disable_licenses_on_refund($order_id) {
+        $licenses = $this->get_order_licenses($order_id);
+        
+        if (empty($licenses)) {
+            return;
+        }
+
+        $license_manager = new WP_Licensing_Manager_License_Manager();
+        
+        foreach ($licenses as $license) {
+            // Only disable active licenses
+            if ($license->status === 'active') {
+                $license_manager->update_license($license->id, array(
+                    'status' => 'disabled'
+                ));
+                
+                // Log the action
+                if (function_exists('error_log')) {
+                    error_log("WP Licensing Manager: Disabled license {$license->license_key} due to order {$order_id} refund/cancellation");
+                }
+            }
+        }
+    }
+
+    /**
      * Get licenses for an order
      *
      * @param int $order_id
@@ -388,6 +422,7 @@ class WP_Licensing_Manager_WooCommerce {
         echo '<th>' . esc_html__('Status', 'wp-licensing-manager') . '</th>';
         echo '<th>' . esc_html__('Expires', 'wp-licensing-manager') . '</th>';
         echo '<th>' . esc_html__('Activations', 'wp-licensing-manager') . '</th>';
+        echo '<th>' . esc_html__('Actions', 'wp-licensing-manager') . '</th>';
         echo '</tr>';
         echo '</thead>';
         echo '<tbody>';
@@ -413,10 +448,50 @@ class WP_Licensing_Manager_WooCommerce {
             echo '<td data-title="' . esc_attr__('Activations', 'wp-licensing-manager') . '">';
             echo esc_html($license->activations . ' / ' . $license->max_activations);
             echo '</td>';
+            echo '<td data-title="' . esc_attr__('Actions', 'wp-licensing-manager') . '">';
+            echo '<button type="button" class="button wc-copy-license" data-license="' . esc_attr($license->license_key) . '">' . esc_html__('Copy', 'wp-licensing-manager') . '</button>';
+            if ($license->status === 'active') {
+                echo ' <small style="color: #666;">' . esc_html__('Active', 'wp-licensing-manager') . '</small>';
+            }
+            echo '</td>';
             echo '</tr>';
         }
 
         echo '</tbody>';
         echo '</table>';
+        
+        // Add copy functionality
+        ?>
+        <script type="text/javascript">
+        jQuery(document).ready(function($) {
+            $('.wc-copy-license').on('click', function(e) {
+                e.preventDefault();
+                var licenseKey = $(this).data('license');
+                
+                // Create temporary input element
+                var temp = $('<input>');
+                $('body').append(temp);
+                temp.val(licenseKey).select();
+                document.execCommand('copy');
+                temp.remove();
+                
+                // Update button text temporarily
+                var button = $(this);
+                var originalText = button.text();
+                button.text('<?php echo esc_js(__('Copied!', 'wp-licensing-manager')); ?>');
+                setTimeout(function() {
+                    button.text(originalText);
+                }, 2000);
+            });
+        });
+        </script>
+        <style>
+        .wc-copy-license {
+            font-size: 12px;
+            padding: 4px 8px;
+            line-height: 1.2;
+        }
+        </style>
+        <?php
     }
 }
