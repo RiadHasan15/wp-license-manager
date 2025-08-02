@@ -245,6 +245,7 @@ class WP_Licensing_Manager {
             changelog text,
             update_file_path varchar(255),
             created_at timestamp DEFAULT CURRENT_TIMESTAMP,
+            updated_at timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
             UNIQUE KEY slug (slug)
         ) $charset_collate;";
@@ -253,6 +254,12 @@ class WP_Licensing_Manager {
         dbDelta($licenses_sql);
         dbDelta($activations_sql);
         dbDelta($products_sql);
+        
+        // Migration: Add updated_at column to existing products table if it doesn't exist
+        $column_exists = $wpdb->get_results("SHOW COLUMNS FROM $products_table LIKE 'updated_at'");
+        if (empty($column_exists)) {
+            $wpdb->query("ALTER TABLE $products_table ADD COLUMN updated_at timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER created_at");
+        }
     }
 
     /**

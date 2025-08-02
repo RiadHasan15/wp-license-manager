@@ -1,5 +1,16 @@
 /* WP Licensing Manager Admin Styles */
 
+/* Products Table */
+.wp-list-table th:nth-child(7),
+.wp-list-table td:nth-child(7) {
+    width: 140px;
+    white-space: nowrap;
+}
+
+.wp-list-table td:nth-child(7) span {
+    font-style: italic;
+}
+
 /* Stats Grid */
 .wp-licensing-stats-grid {
     display: grid;
