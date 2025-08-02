@@ -37,13 +37,12 @@ class WP_Licensing_Manager_WooCommerce {
         add_action('woocommerce_order_status_refunded', array($this, 'disable_licenses_on_refund'));
         add_action('woocommerce_order_status_cancelled', array($this, 'disable_licenses_on_refund'));
 
-        // Customer account hooks
-        add_filter('woocommerce_account_menu_items', array($this, 'add_my_licenses_tab'));
-        add_action('woocommerce_account_my-licenses_endpoint', array($this, 'my_licenses_content'));
-        add_action('init', array($this, 'add_my_licenses_endpoint'));
+        // Downloads table integration - add license keys to downloads
+        add_filter('woocommerce_account_downloads_columns', array($this, 'add_license_column_to_downloads'));
+        add_action('woocommerce_account_downloads_column_license-key', array($this, 'display_license_in_downloads'));
         
-        // Query vars for the endpoint
-        add_filter('woocommerce_get_query_vars', array($this, 'add_query_vars'));
+        // Modify downloads data to include license information
+        add_filter('woocommerce_customer_get_downloadable_products', array($this, 'add_license_data_to_downloads'));
     }
 
     /**
@@ -380,39 +379,119 @@ class WP_Licensing_Manager_WooCommerce {
     }
 
     /**
-     * Add My Licenses tab to customer account
+     * Add License Key column to Downloads table
      *
-     * @param array $items
+     * @param array $columns
      * @return array
      */
-    public function add_my_licenses_tab($items) {
-        $items['my-licenses'] = __('My Licenses', 'wp-licensing-manager');
-        return $items;
+    public function add_license_column_to_downloads($columns) {
+        // Insert License Key column before the Download column
+        $new_columns = array();
+        
+        foreach ($columns as $key => $column) {
+            if ($key === 'download-actions') {
+                $new_columns['license-key'] = __('License Key', 'wp-licensing-manager');
+            }
+            $new_columns[$key] = $column;
+        }
+        
+        return $new_columns;
     }
 
     /**
-     * Add My Licenses endpoint
+     * Display license key in Downloads table
+     *
+     * @param array $download
      */
-    public function add_my_licenses_endpoint() {
-        add_rewrite_endpoint('my-licenses', EP_ROOT | EP_PAGES);
+    public function display_license_in_downloads($download) {
+        // Get license for this order/product combination
+        $license = $this->get_license_for_download($download);
         
-        // Check if we need to flush rewrite rules
-        if (!get_option('wp_licensing_manager_rewrite_flushed')) {
-            flush_rewrite_rules();
-            update_option('wp_licensing_manager_rewrite_flushed', true);
+        if ($license) {
+            echo '<div class="wc-license-key-cell">';
+            echo '<code class="wc-license-key">' . esc_html($license->license_key) . '</code>';
+            echo '<button type="button" class="button wc-copy-license" data-license="' . esc_attr($license->license_key) . '" title="' . esc_attr__('Copy License Key', 'wp-licensing-manager') . '">' . esc_html__('Copy', 'wp-licensing-manager') . '</button>';
+            echo '<div class="wc-license-status">';
+            echo '<small>' . wp_licensing_manager_format_status($license->status) . '</small>';
+            if (!empty($license->expires_at) && $license->expires_at !== '0000-00-00') {
+                echo '<br><small>' . sprintf(__('Expires: %s', 'wp-licensing-manager'), date_i18n(get_option('date_format'), strtotime($license->expires_at))) . '</small>';
+            }
+            echo '</div>';
+            echo '</div>';
+        } else {
+            echo '<span class="wc-no-license">' . esc_html__('No license required', 'wp-licensing-manager') . '</span>';
         }
     }
 
     /**
-     * Add query vars for WooCommerce
+     * Add license data to downloads
+     *
+     * @param array $downloads
+     * @return array
      */
-    public function add_query_vars($vars) {
-        $vars['my-licenses'] = 'my-licenses';
-        return $vars;
+    public function add_license_data_to_downloads($downloads) {
+        foreach ($downloads as &$download) {
+            $license = $this->get_license_for_download($download);
+            if ($license) {
+                $download['license_data'] = $license;
+            }
+        }
+        return $downloads;
     }
 
     /**
-     * My Licenses tab content
+     * Get license for a download
+     *
+     * @param array $download
+     * @return object|null
+     */
+    private function get_license_for_download($download) {
+        global $wpdb;
+        
+        // Get the product ID and order ID from the download
+        $order_id = $download['order_id'] ?? null;
+        
+        if (!$order_id) {
+            return null;
+        }
+        
+        // Get the WooCommerce product ID
+        $wc_product_id = $download['product_id'] ?? null;
+        if (!$wc_product_id) {
+            return null;
+        }
+        
+        // Check if this WooCommerce product has licensing enabled
+        $is_licensed = get_post_meta($wc_product_id, '_is_licensed', true);
+        if ($is_licensed !== 'yes') {
+            return null;
+        }
+        
+        // Get the license product ID
+        $license_product_id = get_post_meta($wc_product_id, '_license_product_id', true);
+        if (!$license_product_id) {
+            return null;
+        }
+        
+        // Find the license for this order and license product
+        $license = $wpdb->get_row(
+            $wpdb->prepare(
+                "SELECT l.*, p.name as product_name 
+                 FROM {$wpdb->prefix}licenses l 
+                 LEFT JOIN {$wpdb->prefix}license_products p ON l.product_id = p.id 
+                 WHERE l.order_id = %d AND l.product_id = %d 
+                 ORDER BY l.created_at DESC 
+                 LIMIT 1",
+                $order_id,
+                $license_product_id
+            )
+        );
+        
+        return $license;
+    }
+
+    /**
+     * My Licenses tab content (legacy - keeping for backward compatibility)
      */
     public function my_licenses_content() {
         $customer_email = wp_get_current_user()->user_email;
@@ -508,7 +587,80 @@ class WP_Licensing_Manager_WooCommerce {
             padding: 4px 8px;
             line-height: 1.2;
         }
+        
+        /* Downloads table license integration */
+        .wc-license-key-cell {
+            text-align: left;
+        }
+        
+        .wc-license-key {
+            display: block;
+            background: #f8f9fa;
+            padding: 6px 8px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 12px;
+            margin-bottom: 6px;
+            word-break: break-all;
+            border: 1px solid #e1e5e9;
+        }
+        
+        .wc-license-key-cell .wc-copy-license {
+            font-size: 11px;
+            padding: 3px 6px;
+            margin-bottom: 4px;
+        }
+        
+        .wc-license-status small {
+            color: #666;
+            font-size: 11px;
+            line-height: 1.3;
+        }
+        
+        .wc-no-license {
+            color: #999;
+            font-style: italic;
+            font-size: 12px;
+        }
+        
+        /* Responsive improvements for downloads table */
+        @media (max-width: 768px) {
+            .wc-license-key {
+                font-size: 10px;
+                padding: 4px 6px;
+            }
+            
+            .wc-license-key-cell .wc-copy-license {
+                font-size: 10px;
+                padding: 2px 4px;
+            }
+        }
         </style>
+        
+        <script type="text/javascript">
+        jQuery(document).ready(function($) {
+            // Copy functionality for downloads table
+            $(document).on('click', '.wc-copy-license', function(e) {
+                e.preventDefault();
+                var licenseKey = $(this).data('license');
+                
+                // Create temporary input element
+                var temp = $('<input>');
+                $('body').append(temp);
+                temp.val(licenseKey).select();
+                document.execCommand('copy');
+                temp.remove();
+                
+                // Update button text temporarily
+                var button = $(this);
+                var originalText = button.text();
+                button.text('<?php echo esc_js(__('Copied!', 'wp-licensing-manager')); ?>');
+                setTimeout(function() {
+                    button.text(originalText);
+                }, 2000);
+            });
+        });
+        </script>
         <?php
     }
 }
