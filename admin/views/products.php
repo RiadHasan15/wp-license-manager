@@ -16,13 +16,37 @@ if (isset($_POST['upload_update_file']) && wp_verify_nonce($_POST['_wpnonce'], '
     $product = $product_manager->get_product($product_id);
     
     if ($product && isset($_FILES['update_file'])) {
-        $file_path = $product_manager->handle_update_file_upload($_FILES['update_file'], $product->slug);
+        $new_version = sanitize_text_field($_POST['new_version']);
+        $new_changelog = wp_kses_post($_POST['new_changelog']);
         
-        if ($file_path) {
-            $product_manager->update_product($product_id, array('update_file_path' => $file_path));
-            echo '<div class="notice notice-success"><p>' . esc_html__('Update file uploaded successfully.', 'wp-licensing-manager') . '</p></div>';
+        // Validate version format
+        if (empty($new_version) || !preg_match('/^\d+\.\d+(\.\d+)?/', $new_version)) {
+            echo '<div class="notice notice-error"><p>' . esc_html__('Please enter a valid version number (e.g., 1.0.5).', 'wp-licensing-manager') . '</p></div>';
         } else {
-            echo '<div class="notice notice-error"><p>' . esc_html__('Failed to upload update file. Please ensure it is a valid ZIP file.', 'wp-licensing-manager') . '</p></div>';
+            $file_path = $product_manager->handle_update_file_upload($_FILES['update_file'], $product->slug);
+            
+            if ($file_path) {
+                // Update product with new version, changelog, and file path
+                $update_result = $product_manager->update_product($product_id, array(
+                    'latest_version' => $new_version,
+                    'changelog' => $new_changelog,
+                    'update_file_path' => $file_path
+                ));
+                
+                if ($update_result) {
+                    // Clear update caches so clients can immediately detect the new version
+                    $product_manager->clear_update_caches($product->slug);
+                    
+                    echo '<div class="notice notice-success"><p>' . sprintf(
+                        esc_html__('Update uploaded successfully! Version %s is now available for download. Update caches have been cleared.', 'wp-licensing-manager'),
+                        esc_html($new_version)
+                    ) . '</p></div>';
+                } else {
+                    echo '<div class="notice notice-error"><p>' . esc_html__('Failed to update product information.', 'wp-licensing-manager') . '</p></div>';
+                }
+            } else {
+                echo '<div class="notice notice-error"><p>' . esc_html__('Failed to upload update file. Please ensure it is a valid ZIP file.', 'wp-licensing-manager') . '</p></div>';
+            }
         }
     }
 }
@@ -84,10 +108,10 @@ $total_pages = $products_data['pages'];
                         <td>
                             <?php if (!empty($product->update_file_path)): ?>
                                 <span class="dashicons dashicons-yes-alt" style="color: green;" title="<?php esc_attr_e('Update file available', 'wp-licensing-manager'); ?>"></span>
-                                <a href="#" class="upload-update-file" data-product-id="<?php echo esc_attr($product->id); ?>"><?php esc_html_e('Update', 'wp-licensing-manager'); ?></a>
+                                <a href="#" class="upload-update-file" data-product-id="<?php echo esc_attr($product->id); ?>" data-current-version="<?php echo esc_attr($product->latest_version); ?>"><?php esc_html_e('Update', 'wp-licensing-manager'); ?></a>
                             <?php else: ?>
                                 <span class="dashicons dashicons-warning" style="color: orange;" title="<?php esc_attr_e('No update file', 'wp-licensing-manager'); ?>"></span>
-                                <a href="#" class="upload-update-file" data-product-id="<?php echo esc_attr($product->id); ?>"><?php esc_html_e('Upload', 'wp-licensing-manager'); ?></a>
+                                <a href="#" class="upload-update-file" data-product-id="<?php echo esc_attr($product->id); ?>" data-current-version="<?php echo esc_attr($product->latest_version); ?>"><?php esc_html_e('Upload', 'wp-licensing-manager'); ?></a>
                             <?php endif; ?>
                         </td>
                         <td>
@@ -196,6 +220,24 @@ $total_pages = $products_data['pages'];
             <input type="hidden" id="upload-product-id" name="product_id" value="" />
             
             <table class="form-table">
+                <tr>
+                    <th scope="row">
+                        <label for="update-version"><?php esc_html_e('New Version', 'wp-licensing-manager'); ?></label>
+                    </th>
+                    <td>
+                        <input type="text" id="update-version" name="new_version" class="regular-text" required />
+                        <p class="description"><?php esc_html_e('Version number for this update (e.g., 1.0.5)', 'wp-licensing-manager'); ?></p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">
+                        <label for="update-changelog"><?php esc_html_e('Changelog', 'wp-licensing-manager'); ?></label>
+                    </th>
+                    <td>
+                        <textarea id="update-changelog" name="new_changelog" rows="4" class="large-text"></textarea>
+                        <p class="description"><?php esc_html_e('What\'s new in this version?', 'wp-licensing-manager'); ?></p>
+                    </td>
+                </tr>
                 <tr>
                     <th scope="row">
                         <label for="update-file"><?php esc_html_e('Update File', 'wp-licensing-manager'); ?></label>

@@ -221,7 +221,24 @@ jQuery(document).ready(function($) {
     $(document).on('click', '.upload-update-file', function(e) {
         e.preventDefault();
         var productId = $(this).data('product-id');
+        var currentVersion = $(this).data('current-version') || '1.0.0';
+        
         $('#upload-product-id').val(productId);
+        
+        // Auto-suggest next version number
+        var versionParts = currentVersion.split('.');
+        if (versionParts.length >= 3) {
+            versionParts[2] = (parseInt(versionParts[2]) + 1).toString();
+        } else if (versionParts.length === 2) {
+            versionParts.push('1');
+        } else {
+            versionParts = ['1', '0', '1'];
+        }
+        var suggestedVersion = versionParts.join('.');
+        
+        $('#update-version').val(suggestedVersion);
+        $('#update-changelog').val('Bug fixes and improvements');
+        
         openModal('upload-modal');
     });
 
