@@ -372,4 +372,31 @@ class WP_Licensing_Manager_Product_Manager {
 
         return $stats;
     }
+
+    /**
+     * Clear update caches for a product
+     * Call this when a product version is updated to ensure clients get the new version
+     *
+     * @param string $product_slug
+     */
+    public function clear_update_caches($product_slug) {
+        // Clear WordPress update caches
+        delete_site_transient('update_plugins');
+        delete_site_transient('update_themes');
+        
+        // Clear any custom caches for this product
+        $cache_patterns = array(
+            $product_slug . '_remote_version',
+            $product_slug . '_changelog',
+            $product_slug . '_update_info'
+        );
+        
+        foreach ($cache_patterns as $pattern) {
+            delete_transient($pattern);
+            delete_site_transient($pattern);
+        }
+        
+        // Fire action hook for other plugins to clear their caches
+        do_action('wp_licensing_manager_product_updated', $product_slug);
+    }
 }

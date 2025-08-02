@@ -135,6 +135,10 @@ class ' . $class_name . '_License_Manager {
         if (isset($_POST[\'check_license\']) && wp_verify_nonce($_POST[\'license_nonce\'], \'license_nonce\')) {
             $this->check_license_status();
         }
+        
+        if (isset($_POST[\'force_update_check\']) && wp_verify_nonce($_POST[\'license_nonce\'], \'license_nonce\')) {
+            $this->force_update_check();
+        }
     }
     
     public function license_menu() {
@@ -203,6 +207,8 @@ class ' . $class_name . '_License_Manager {
                         <?php if ($status == \'valid\'): ?>
                             <input type="submit" name="deactivate_license" value="Deactivate License" class="button" />
                             <input type="submit" name="check_license" value="Check Status" class="button" />
+                            <input type="submit" name="force_update_check" value="Check for Updates Now" class="button-secondary" />
+                            <input type="hidden" name="force-check" value="1" />
                         <?php else: ?>
                             <input type="submit" name="activate_license" value="Activate License" class="button-primary" />
                         <?php endif; ?>
@@ -354,6 +360,28 @@ class ' . $class_name . '_License_Manager {
         }
     }
     
+    public function force_update_check() {
+        // Clear the version cache to force immediate update check
+        $cache_key = $this->plugin_slug . \'_remote_version\';
+        delete_transient($cache_key);
+        
+        // Clear WordPress update caches
+        delete_site_transient(\'update_plugins\');
+        
+        // Check for updates immediately
+        $remote_version = $this->get_remote_version();
+        
+        if ($remote_version && version_compare($this->version, $remote_version, \'<\')) {
+            add_action(\'admin_notices\', function() use ($remote_version) {
+                echo \'<div class="notice notice-info"><p><strong>Update Available!</strong> Version \' . esc_html($remote_version) . \' is now available. Check your WordPress Updates page to install.</p></div>\';
+            });
+        } else {
+            add_action(\'admin_notices\', function() {
+                echo \'<div class="notice notice-success"><p>No updates available. You have the latest version!</p></div>\';
+            });
+        }
+    }
+    
     public function check_for_update($transient) {
         if (empty($transient->checked)) {
             return $transient;
@@ -422,11 +450,14 @@ class ' . $class_name . '_License_Manager {
             return false;
         }
         
-        // Cache remote version check for 12 hours
+        // Cache remote version check for 1 hour (improved for faster update detection)
         $cache_key = $this->plugin_slug . \'_remote_version\';
         $cached_version = get_transient($cache_key);
         
-        if ($cached_version !== false) {
+        // Check if user manually requested update check
+        $force_check = isset($_GET[\'force-check\']) || isset($_POST[\'force-check\']);
+        
+        if ($cached_version !== false && !$force_check) {
             return $cached_version;
         }
         
@@ -445,7 +476,7 @@ class ' . $class_name . '_License_Manager {
             
             if (isset($body[\'success\']) && $body[\'success\'] && isset($body[\'latest_version\'])) {
                 $remote_version = $body[\'latest_version\'];
-                set_transient($cache_key, $remote_version, 12 * HOUR_IN_SECONDS);
+                set_transient($cache_key, $remote_version, 1 * HOUR_IN_SECONDS);
                 return $remote_version;
             }
         }
