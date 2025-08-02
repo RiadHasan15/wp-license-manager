@@ -21,6 +21,11 @@ class WP_Licensing_Manager_API {
      * Register REST API routes
      */
     public function register_routes() {
+        // Debug: Log that route registration is being called
+        if (function_exists('error_log')) {
+            error_log('WP Licensing Manager: Registering REST API routes');
+        }
+        
         $namespace = 'licensing/v1';
 
         // Validate endpoint
@@ -122,6 +127,18 @@ class WP_Licensing_Manager_API {
             'callback' => array($this, 'get_stats'),
             'permission_callback' => array($this, 'check_admin_permissions')
         ));
+        
+        // API status endpoint (for testing)
+        register_rest_route($namespace, '/status', array(
+            'methods' => 'GET',
+            'callback' => array($this, 'api_status'),
+            'permission_callback' => '__return_true'
+        ));
+        
+        // Debug: Log successful route registration
+        if (function_exists('error_log')) {
+            error_log('WP Licensing Manager: All REST API routes registered successfully');
+        }
     }
 
     /**
@@ -400,5 +417,29 @@ class WP_Licensing_Manager_API {
      */
     public function check_admin_permissions() {
         return current_user_can('manage_options');
+    }
+    
+    /**
+     * API status endpoint for testing
+     *
+     * @param WP_REST_Request $request
+     * @return WP_REST_Response
+     */
+    public function api_status($request) {
+        return new WP_REST_Response(array(
+            'success' => true,
+            'message' => 'WP Licensing Manager API is working correctly',
+            'version' => '1.0.0',
+            'endpoints' => array(
+                'POST /licensing/v1/validate' => 'Validate a license key',
+                'POST /licensing/v1/activate' => 'Activate a license on a domain',
+                'POST /licensing/v1/deactivate' => 'Deactivate a license from a domain',
+                'POST /licensing/v1/update-check' => 'Check for product updates',
+                'GET /licensing/v1/update-download' => 'Download product updates',
+                'GET /licensing/v1/stats' => 'Get licensing statistics (admin only)',
+                'GET /licensing/v1/status' => 'API status (this endpoint)'
+            ),
+            'timestamp' => current_time('c')
+        ), 200);
     }
 }
