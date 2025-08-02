@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name: WP Licensing Manager
- * Plugin URI: https://example.com/wp-licensing-manager
+ * Plugin URI: https://stackcastle.com/wp-licensing-manager
  * Description: A comprehensive licensing system for WordPress plugins and themes with WooCommerce integration.
- * Version: 1.0.0
- * Author: Your Name
- * Author URI: https://example.com
+ * Version: 1.1.0
+ * Author: StackCastle
+ * Author URI: https://stackcastle.com/
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: wp-licensing-manager
@@ -23,7 +23,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('WP_LICENSING_MANAGER_VERSION', '1.0.0');
+define('WP_LICENSING_MANAGER_VERSION', '1.1.0');
 define('WP_LICENSING_MANAGER_PLUGIN_FILE', __FILE__);
 define('WP_LICENSING_MANAGER_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('WP_LICENSING_MANAGER_PLUGIN_URL', plugin_dir_url(__FILE__));
