@@ -11,8 +11,18 @@ if (!defined('ABSPATH')) {
 // Get current settings
 $default_expiry_days = get_option('wp_licensing_manager_default_expiry_days', 365);
 $default_max_activations = get_option('wp_licensing_manager_default_max_activations', 1);
-$email_template_subject = get_option('wp_licensing_manager_email_template_subject', 'Your License Key');
-$email_template_body = get_option('wp_licensing_manager_email_template_body', 'Thank you for your purchase. Your license key is: {license_key}');
+$email_template_subject = get_option('wp_licensing_manager_email_template_subject', 'Your {product_name} License Key');
+$email_template_body = get_option('wp_licensing_manager_email_template_body', 'Hi {customer_name},
+
+Thank you for your purchase of {product_name}!
+
+Your license key is: {license_key}
+Order ID: {order_id}
+
+Please keep this information safe as you will need it to activate your product.
+
+Best regards,
+StackCastle Team');
 ?>
 
 <div class="wrap">
@@ -63,7 +73,7 @@ $email_template_body = get_option('wp_licensing_manager_email_template_body', 'T
                     <textarea id="email_template_body" name="email_template_body" rows="10" class="large-text"><?php echo esc_textarea($email_template_body); ?></textarea>
                     <p class="description">
                         <?php esc_html_e('Available placeholders:', 'wp-licensing-manager'); ?>
-                        <code>{license_key}</code>, <code>{customer_name}</code>, <code>{order_id}</code>
+                        <code>{license_key}</code>, <code>{customer_name}</code>, <code>{order_id}</code>, <code>{product_name}</code>
                     </p>
                 </td>
             </tr>

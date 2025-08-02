@@ -301,10 +301,21 @@ class WP_Licensing_Manager_WooCommerce {
         $subject = get_option('wp_licensing_manager_email_template_subject', 'Your License Key');
         $body = get_option('wp_licensing_manager_email_template_body', 'Thank you for your purchase. Your license key is: {license_key}');
 
+        // Get product name
+        $product_manager = new WP_Licensing_Manager_Product_Manager();
+        $product = $product_manager->get_product($license->product_id);
+        $product_name = $product ? $product->name : 'Unknown Product';
+
         // Replace placeholders
+        $subject = str_replace('{license_key}', $license->license_key, $subject);
+        $subject = str_replace('{customer_name}', $order->get_billing_first_name() . ' ' . $order->get_billing_last_name(), $subject);
+        $subject = str_replace('{order_id}', $order->get_id(), $subject);
+        $subject = str_replace('{product_name}', $product_name, $subject);
+
         $body = str_replace('{license_key}', $license->license_key, $body);
         $body = str_replace('{customer_name}', $order->get_billing_first_name() . ' ' . $order->get_billing_last_name(), $body);
         $body = str_replace('{order_id}', $order->get_id(), $body);
+        $body = str_replace('{product_name}', $product_name, $body);
 
         wp_mail(
             $order->get_billing_email(),
