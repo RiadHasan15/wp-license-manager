@@ -43,6 +43,14 @@ class WP_Licensing_Manager_WooCommerce {
         
         // Modify downloads data to include license information
         add_filter('woocommerce_customer_get_downloadable_products', array($this, 'add_license_data_to_downloads'));
+        
+        // Customize downloads table columns and data
+        add_filter('woocommerce_account_downloads_columns', array($this, 'customize_downloads_columns'));
+        add_action('woocommerce_account_downloads_column_download-expires', array($this, 'display_license_expiry'));
+        
+        // Add professional dashboard styling
+        add_action('wp_head', array($this, 'add_dashboard_styles'));
+        add_action('woocommerce_account_navigation', array($this, 'add_dashboard_enhancements'));
     }
 
     /**
@@ -399,6 +407,33 @@ class WP_Licensing_Manager_WooCommerce {
     }
 
     /**
+     * Customize Downloads table columns
+     *
+     * @param array $columns
+     * @return array
+     */
+    public function customize_downloads_columns($columns) {
+        // Remove Downloads remaining column and customize expires column
+        $customized_columns = array();
+        
+        foreach ($columns as $key => $column) {
+            // Skip downloads remaining column
+            if ($key === 'download-remaining') {
+                continue;
+            }
+            
+            // Rename expires column to be more specific about license expiry
+            if ($key === 'download-expires') {
+                $customized_columns[$key] = __('License Expires', 'wp-licensing-manager');
+            } else {
+                $customized_columns[$key] = $column;
+            }
+        }
+        
+        return $customized_columns;
+    }
+
+    /**
      * Display license key in Downloads table
      *
      * @param array $download
@@ -527,6 +562,49 @@ class WP_Licensing_Manager_WooCommerce {
     }
 
     /**
+     * Display license expiry in Downloads table expires column
+     *
+     * @param array $download
+     */
+    public function display_license_expiry($download) {
+        // Get license for this download
+        $license = $this->get_license_for_download($download);
+        
+        if ($license) {
+            if (!empty($license->expires_at) && $license->expires_at !== '0000-00-00') {
+                $expiry_date = date_i18n(get_option('date_format'), strtotime($license->expires_at));
+                $days_remaining = ceil((strtotime($license->expires_at) - time()) / (60 * 60 * 24));
+                
+                echo '<div class="license-expiry-cell">';
+                echo '<time datetime="' . esc_attr($license->expires_at) . '" class="license-expiry-date">' . esc_html($expiry_date) . '</time>';
+                
+                if ($days_remaining > 0) {
+                    if ($days_remaining <= 30) {
+                        echo '<small class="expiry-warning">(' . sprintf(__('%d days left', 'wp-licensing-manager'), $days_remaining) . ')</small>';
+                    } else {
+                        echo '<small class="expiry-info">(' . sprintf(__('%d days left', 'wp-licensing-manager'), $days_remaining) . ')</small>';
+                    }
+                } else {
+                    echo '<small class="expiry-expired">(' . __('Expired', 'wp-licensing-manager') . ')</small>';
+                }
+                echo '</div>';
+            } else {
+                echo '<div class="license-expiry-cell lifetime">';
+                echo '<span class="lifetime-license">' . esc_html__('Lifetime', 'wp-licensing-manager') . '</span>';
+                echo '<small class="lifetime-info">(' . __('Never expires', 'wp-licensing-manager') . ')</small>';
+                echo '</div>';
+            }
+        } else {
+            // For non-licensed products, show the original download expiry or "N/A"
+            if (isset($download['access_expires']) && !empty($download['access_expires'])) {
+                echo esc_html(date_i18n(get_option('date_format'), strtotime($download['access_expires'])));
+            } else {
+                echo '<span class="no-expiry">' . esc_html__('N/A', 'wp-licensing-manager') . '</span>';
+            }
+        }
+    }
+
+    /**
      * My Licenses tab content (legacy - keeping for backward compatibility)
      */
     public function my_licenses_content() {
@@ -591,6 +669,343 @@ class WP_Licensing_Manager_WooCommerce {
 
         echo '</tbody>';
         echo '</table>';
+    }
+
+    /**
+     * Add professional dashboard styles
+     */
+    public function add_dashboard_styles() {
+        if (!is_account_page()) {
+            return;
+        }
+        
+        ?>
+        <style>
+        /* PROFESSIONAL WOOCOMMERCE DASHBOARD STYLING */
+        
+        /* Dashboard Navigation */
+        .woocommerce-MyAccount-navigation {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 0;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+        
+        .woocommerce-MyAccount-navigation ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .woocommerce-MyAccount-navigation li {
+            margin: 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .woocommerce-MyAccount-navigation li:last-child {
+            border-bottom: none;
+        }
+        
+        .woocommerce-MyAccount-navigation a {
+            display: flex;
+            align-items: center;
+            padding: 18px 24px;
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .woocommerce-MyAccount-navigation a:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+        
+        .woocommerce-MyAccount-navigation a:hover:before {
+            left: 100%;
+        }
+        
+        .woocommerce-MyAccount-navigation a:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateX(5px);
+        }
+        
+        .woocommerce-MyAccount-navigation .is-active a {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-weight: 600;
+            box-shadow: inset 4px 0 0 #fff;
+        }
+        
+        /* Add icons to navigation items */
+        .woocommerce-MyAccount-navigation a[href*="dashboard"]:before {
+            content: "🏠";
+            margin-right: 12px;
+            font-size: 18px;
+        }
+        
+        .woocommerce-MyAccount-navigation a[href*="orders"]:before {
+            content: "📦";
+            margin-right: 12px;
+            font-size: 18px;
+        }
+        
+        .woocommerce-MyAccount-navigation a[href*="downloads"]:before {
+            content: "💾";
+            margin-right: 12px;
+            font-size: 18px;
+        }
+        
+        .woocommerce-MyAccount-navigation a[href*="edit-address"]:before {
+            content: "🏠";
+            margin-right: 12px;
+            font-size: 18px;
+        }
+        
+        .woocommerce-MyAccount-navigation a[href*="edit-account"]:before {
+            content: "👤";
+            margin-right: 12px;
+            font-size: 18px;
+        }
+        
+        .woocommerce-MyAccount-navigation a[href*="customer-logout"]:before {
+            content: "🚪";
+            margin-right: 12px;
+            font-size: 18px;
+        }
+        
+        /* Dashboard Content Area */
+        .woocommerce-MyAccount-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+            border: 1px solid #f0f2f5;
+        }
+        
+        /* Page Headers */
+        .woocommerce-MyAccount-content h2,
+        .woocommerce-MyAccount-content h3 {
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e74c3c;
+            display: inline-block;
+        }
+        
+        /* Downloads Table Enhancements */
+        .shop_table_responsive {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e8ecef;
+        }
+        
+        .shop_table_responsive thead {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+        
+        .shop_table_responsive thead th {
+            color: #495057;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 20px 16px;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .shop_table_responsive tbody tr {
+            transition: all 0.3s ease;
+        }
+        
+        .shop_table_responsive tbody tr:hover {
+            background: #f8f9fa;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .shop_table_responsive tbody td {
+            padding: 18px 16px;
+            border-bottom: 1px solid #f1f3f4;
+            vertical-align: middle;
+        }
+        
+        /* License Expiry Cell Styling */
+        .license-expiry-cell {
+            text-align: left;
+        }
+        
+        .license-expiry-date {
+            display: block;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 4px;
+        }
+        
+        .expiry-warning {
+            color: #e74c3c;
+            font-weight: 500;
+            background: #ffeaa7;
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-size: 11px;
+            display: inline-block;
+        }
+        
+        .expiry-info {
+            color: #27ae60;
+            font-weight: 500;
+            background: #d5f4e6;
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-size: 11px;
+            display: inline-block;
+        }
+        
+        .expiry-expired {
+            color: #e74c3c;
+            font-weight: 600;
+            background: #ffeaa7;
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-size: 11px;
+            display: inline-block;
+        }
+        
+        .lifetime-license {
+            color: #27ae60;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .lifetime-info {
+            color: #27ae60;
+            background: #d5f4e6;
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-size: 11px;
+            display: inline-block;
+            margin-top: 4px;
+        }
+        
+        .no-expiry {
+            color: #6c757d;
+            font-style: italic;
+        }
+        
+        /* Download Actions */
+        .download-actions .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+        
+        .download-actions .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        /* Responsive Dashboard */
+        @media (max-width: 768px) {
+            .woocommerce-MyAccount-navigation {
+                margin-bottom: 20px;
+                border-radius: 8px;
+            }
+            
+            .woocommerce-MyAccount-navigation a {
+                padding: 15px 20px;
+                font-size: 14px;
+            }
+            
+            .woocommerce-MyAccount-content {
+                padding: 20px;
+                border-radius: 8px;
+            }
+            
+            .shop_table_responsive thead th {
+                padding: 15px 12px;
+                font-size: 12px;
+            }
+            
+            .shop_table_responsive tbody td {
+                padding: 15px 12px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .woocommerce-MyAccount-navigation a {
+                padding: 12px 16px;
+                font-size: 13px;
+            }
+            
+            .woocommerce-MyAccount-content {
+                padding: 16px;
+            }
+            
+            .shop_table_responsive thead th {
+                padding: 12px 8px;
+                font-size: 11px;
+            }
+            
+            .shop_table_responsive tbody td {
+                padding: 12px 8px;
+            }
+        }
+        </style>
+        <?php
+    }
+
+    /**
+     * Add dashboard enhancements
+     */
+    public function add_dashboard_enhancements() {
+        // Add any additional dashboard functionality here
+        echo '<script>
+        jQuery(document).ready(function($) {
+            // Add smooth scrolling to dashboard
+            $(".woocommerce-MyAccount-navigation a").on("click", function(e) {
+                var target = $(this.getAttribute("href"));
+                if (target.length) {
+                    e.preventDefault();
+                    $("html, body").stop().animate({
+                        scrollTop: target.offset().top - 100
+                    }, 1000);
+                }
+            });
+            
+            // Add loading states
+            $(".download-actions .button").on("click", function() {
+                var $btn = $(this);
+                var originalText = $btn.text();
+                $btn.text("Downloading...").prop("disabled", true);
+                
+                setTimeout(function() {
+                    $btn.text(originalText).prop("disabled", false);
+                }, 3000);
+            });
+        });
+        </script>';
         
         // Add copy functionality
         ?>
@@ -948,14 +1363,16 @@ class WP_Licensing_Manager_WooCommerce {
             }
         }
         
-        /* WooCommerce responsive table enhancements */
+        /* Enhanced responsive table for professional dashboard */
         @media (max-width: 768px) {
-            /* Ensure downloads table is properly responsive */
-            .woocommerce-MyAccount-orders.account-orders-table {
+            /* Professional downloads table mobile styling */
+            .shop_table_responsive {
                 border: 0;
+                border-radius: 0;
+                box-shadow: none;
             }
             
-            .woocommerce-MyAccount-orders.account-orders-table thead {
+            .shop_table_responsive thead {
                 border: none;
                 clip: rect(0 0 0 0);
                 height: 1px;
@@ -966,46 +1383,85 @@ class WP_Licensing_Manager_WooCommerce {
                 width: 1px;
             }
             
-            .woocommerce-MyAccount-orders.account-orders-table tr {
-                border-bottom: 3px solid #ddd;
+            .shop_table_responsive tr {
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
                 display: block;
-                margin-bottom: 10px;
-                padding-bottom: 10px;
+                margin-bottom: 15px;
+                padding: 15px;
+                border: 1px solid #e8ecef;
             }
             
-            .woocommerce-MyAccount-orders.account-orders-table td {
+            .shop_table_responsive tr:hover {
+                transform: none;
+                box-shadow: 0 3px 15px rgba(0, 0, 0, 0.15);
+            }
+            
+            .shop_table_responsive td {
                 border: none;
-                border-bottom: 1px solid #eee;
+                border-bottom: 1px solid #f1f3f4;
                 display: block;
-                font-size: 13px;
-                text-align: right;
-                padding-left: 50% !important;
+                font-size: 14px;
+                text-align: left;
+                padding: 10px 0 !important;
                 position: relative;
             }
             
-            .woocommerce-MyAccount-orders.account-orders-table td:before {
-                content: attr(data-title) ": ";
-                position: absolute;
-                left: 6px;
-                width: 45%;
-                padding-right: 10px;
-                white-space: nowrap;
-                text-align: left;
-                font-weight: bold;
-                color: #333;
+            .shop_table_responsive td:last-child {
+                border-bottom: none;
             }
             
-            /* License cell specific mobile styling */
-            .woocommerce-MyAccount-orders.account-orders-table td[data-title*="License"] {
-                text-align: left;
-                padding-left: 6px !important;
-            }
-            
-            .woocommerce-MyAccount-orders.account-orders-table td[data-title*="License"]:before {
+            .shop_table_responsive td:before {
+                content: attr(data-title);
+                font-weight: 600;
+                color: #495057;
                 display: block;
-                width: 100%;
                 margin-bottom: 5px;
-                position: static;
+                font-size: 12px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            
+            /* License cell mobile enhancements */
+            .shop_table_responsive td[data-title*="License"] .wc-license-key-cell {
+                margin-top: 5px;
+            }
+            
+            .shop_table_responsive td[data-title*="License"] .wc-license-key {
+                font-size: 11px;
+                padding: 8px 10px;
+                margin-bottom: 8px;
+            }
+            
+            .shop_table_responsive td[data-title*="License"] .wc-copy-license {
+                font-size: 10px;
+                padding: 4px 8px;
+            }
+            
+            /* License expiry mobile styling */
+            .shop_table_responsive td[data-title*="Expires"] .license-expiry-cell {
+                margin-top: 5px;
+            }
+            
+            .shop_table_responsive td[data-title*="Expires"] .license-expiry-date {
+                font-size: 14px;
+                margin-bottom: 6px;
+            }
+            
+            .shop_table_responsive td[data-title*="Expires"] .expiry-warning,
+            .shop_table_responsive td[data-title*="Expires"] .expiry-info,
+            .shop_table_responsive td[data-title*="Expires"] .expiry-expired {
+                font-size: 10px;
+                padding: 3px 8px;
+            }
+            
+            /* Download actions mobile */
+            .shop_table_responsive td[data-title*="Download"] .button {
+                padding: 12px 20px;
+                font-size: 14px;
+                border-radius: 6px;
+                margin-top: 5px;
             }
         }
         
