@@ -116,3 +116,13 @@ $body = json_decode(wp_remote_retrieve_body($response), true);
 if ($body['success']) {
     // License is valid
 }
+```
+
+## About
+
+**Version:** 1.1.0  
+**Author:** StackCastle  
+**Website:** [https://stackcastle.com/](https://stackcastle.com/)  
+**License:** GPL v2 or later
+
+For support and documentation, visit [https://stackcastle.com/wp-licensing-manager](https://stackcastle.com/wp-licensing-manager)

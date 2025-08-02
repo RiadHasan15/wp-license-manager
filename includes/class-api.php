@@ -429,7 +429,7 @@ class WP_Licensing_Manager_API {
         return new WP_REST_Response(array(
             'success' => true,
             'message' => 'WP Licensing Manager API is working correctly',
-            'version' => '1.0.0',
+            'version' => '1.1.0',
             'endpoints' => array(
                 'POST /licensing/v1/validate' => 'Validate a license key',
                 'POST /licensing/v1/activate' => 'Activate a license on a domain',

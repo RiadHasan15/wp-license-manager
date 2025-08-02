@@ -498,7 +498,7 @@ echo "<h1>WP Licensing Manager - Plugin Test Environment</h1>\n";
 echo "<div class='plugin-info'>\n";
 echo "<h2>Plugin Information</h2>\n";
 echo "<p><strong>Name:</strong> WP Licensing Manager</p>\n";
-echo "<p><strong>Version:</strong> 1.0.0</p>\n";
+    echo "<p><strong>Version:</strong> 1.1.0</p>\n";
 echo "<p><strong>Description:</strong> A comprehensive licensing system for WordPress plugins and themes</p>\n";
 echo "</div>\n";
 
