@@ -204,6 +204,9 @@ StackCastle Team',
             }
         }
         
+        // Reset rewrite flush flag to ensure endpoints work
+        delete_option('wp_licensing_manager_rewrite_flushed');
+        
         // Flush rewrite rules
         flush_rewrite_rules();
     }

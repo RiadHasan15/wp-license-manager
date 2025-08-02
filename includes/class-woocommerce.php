@@ -41,6 +41,9 @@ class WP_Licensing_Manager_WooCommerce {
         add_filter('woocommerce_account_menu_items', array($this, 'add_my_licenses_tab'));
         add_action('woocommerce_account_my-licenses_endpoint', array($this, 'my_licenses_content'));
         add_action('init', array($this, 'add_my_licenses_endpoint'));
+        
+        // Query vars for the endpoint
+        add_filter('woocommerce_get_query_vars', array($this, 'add_query_vars'));
     }
 
     /**
@@ -392,6 +395,20 @@ class WP_Licensing_Manager_WooCommerce {
      */
     public function add_my_licenses_endpoint() {
         add_rewrite_endpoint('my-licenses', EP_ROOT | EP_PAGES);
+        
+        // Check if we need to flush rewrite rules
+        if (!get_option('wp_licensing_manager_rewrite_flushed')) {
+            flush_rewrite_rules();
+            update_option('wp_licensing_manager_rewrite_flushed', true);
+        }
+    }
+
+    /**
+     * Add query vars for WooCommerce
+     */
+    public function add_query_vars($vars) {
+        $vars['my-licenses'] = 'my-licenses';
+        return $vars;
     }
 
     /**
