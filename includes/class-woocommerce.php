@@ -1002,7 +1002,7 @@ class WP_Licensing_Manager_WooCommerce {
             var $nav = $(".woocommerce-MyAccount-navigation");
             if ($nav.length) {
                 // Only enhance visual styling, preserve layout
-                // DON'T override: width, display, float, position
+                // DON\'T override: width, display, float, position
                 $nav.css({
                     "background": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                     "border-radius": "12px",
@@ -1011,7 +1011,7 @@ class WP_Licensing_Manager_WooCommerce {
                 });
                 
                 // Enhance navigation links styling only
-                // DON'T override: display, align-items that break layout
+                // DON\'T override: display, align-items that break layout
                 $nav.find("a").css({
                     "color": "rgba(255, 255, 255, 0.9)",
                     "text-decoration": "none",
@@ -1020,7 +1020,7 @@ class WP_Licensing_Manager_WooCommerce {
             }
             
             // Enhance table styling without breaking layout
-            // DON'T override: width, display, table-layout
+            // DON\'T override: width, display, table-layout
             var $table = $(".shop_table_responsive");
             if ($table.length) {
                 $table.css({
@@ -1033,7 +1033,7 @@ class WP_Licensing_Manager_WooCommerce {
             
             // Light theme compatibility check (non-intrusive)
             setTimeout(function() {
-                // Only check and enhance, don't force override
+                // Only check and enhance, don\'t force override
                 var navBg = $nav.css("background-image");
                 if (!navBg || navBg === "none") {
                     // Gentle enhancement - preserve layout
