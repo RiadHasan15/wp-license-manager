@@ -1002,24 +1002,25 @@ class WP_Licensing_Manager_WooCommerce {
             var $nav = $(".woocommerce-MyAccount-navigation");
             if ($nav.length) {
                 // Only enhance visual styling, preserve layout
+                // DON'T override: width, display, float, position
                 $nav.css({
                     "background": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                     "border-radius": "12px",
                     "box-shadow": "0 10px 30px rgba(102, 126, 234, 0.3)",
                     "overflow": "hidden"
-                    // DON'T override: width, display, float, position
                 });
                 
                 // Enhance navigation links styling only
+                // DON'T override: display, align-items that break layout
                 $nav.find("a").css({
                     "color": "rgba(255, 255, 255, 0.9)",
                     "text-decoration": "none",
                     "padding": "18px 24px"
-                    // DON'T override: display, align-items that break layout
                 });
             }
             
             // Enhance table styling without breaking layout
+            // DON'T override: width, display, table-layout
             var $table = $(".shop_table_responsive");
             if ($table.length) {
                 $table.css({
@@ -1027,7 +1028,6 @@ class WP_Licensing_Manager_WooCommerce {
                     "border-radius": "8px",
                     "box-shadow": "0 2px 10px rgba(0, 0, 0, 0.05)",
                     "border": "1px solid #e8ecef"
-                    // DON'T override: width, display, table-layout
                 });
             }
             
