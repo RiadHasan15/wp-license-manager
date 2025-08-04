@@ -15,6 +15,18 @@ if (!defined('ABSPATH')) {
 $email_settings = get_option('wp_licensing_email_settings', array());
 $email_templates = get_option('wp_licensing_email_templates', array());
 
+// Fallback: If templates option is empty, try to get from the Email Manager
+if (empty($email_templates) && isset($GLOBALS['wp_licensing_manager']) && $GLOBALS['wp_licensing_manager']->email_manager) {
+    $email_manager = $GLOBALS['wp_licensing_manager']->email_manager;
+    $reflection = new ReflectionClass($email_manager);
+    $property = $reflection->getProperty('email_templates');
+    $property->setAccessible(true);
+    $manager_templates = $property->getValue($email_manager);
+    if (!empty($manager_templates)) {
+        $email_templates = $manager_templates;
+    }
+}
+
 // Merge with defaults
 $default_settings = array(
     'from_name' => get_bloginfo('name'),
@@ -152,11 +164,25 @@ foreach ($default_templates as $type => $default_template) {
 if (empty($email_templates)) {
     $email_templates = $default_templates;
 }
+
+// Final safety check: ensure all default template types exist
+foreach ($default_templates as $type => $template) {
+    if (!isset($email_templates[$type]) || empty($email_templates[$type])) {
+        $email_templates[$type] = $template;
+    }
+}
 ?>
 
 <div class="wrap wp-licensing-email-settings">
     <h1><?php _e('Email Automation Settings', 'wp-licensing-manager'); ?></h1>
     <p class="description"><?php _e('Configure automated email sequences for license lifecycle management. All emails are fully customizable and can be enabled/disabled individually.', 'wp-licensing-manager'); ?></p>
+    
+    <?php
+    // Include verification for debugging
+    if (current_user_can('manage_options') && (isset($_GET['debug']) || !get_option('wp_licensing_email_templates'))) {
+        include __DIR__ . '/email-automation-verification.php';
+    }
+    ?>
 
     <form method="post" action="" id="email-settings-form">
         <?php wp_nonce_field('wp_licensing_email_settings', 'wp_licensing_email_nonce'); ?>
@@ -164,9 +190,9 @@ if (empty($email_templates)) {
         <nav class="nav-tab-wrapper">
             <a href="#general-settings" class="nav-tab nav-tab-active"><?php _e('General Settings', 'wp-licensing-manager'); ?></a>
             <a href="#welcome-email" class="nav-tab"><?php _e('Welcome Email', 'wp-licensing-manager'); ?></a>
-            <a href="#renewal-reminders" class="nav-tab"><?php _e('Renewal Reminders', 'wp-licensing-manager'); ?></a>
-            <a href="#grace-period" class="nav-tab"><?php _e('Grace Period', 'wp-licensing-manager'); ?></a>
-            <a href="#usage-tips" class="nav-tab"><?php _e('Usage Tips', 'wp-licensing-manager'); ?></a>
+            <a href="#renewal-reminder-email" class="nav-tab"><?php _e('Renewal Reminders', 'wp-licensing-manager'); ?></a>
+            <a href="#grace-period-email" class="nav-tab"><?php _e('Grace Period', 'wp-licensing-manager'); ?></a>
+            <a href="#usage-tips-email" class="nav-tab"><?php _e('Usage Tips', 'wp-licensing-manager'); ?></a>
             <a href="#email-logs" class="nav-tab"><?php _e('Email Logs', 'wp-licensing-manager'); ?></a>
         </nav>
 
@@ -310,15 +336,18 @@ if (empty($email_templates)) {
 
         <!-- Email Template Tabs -->
         <?php 
-        // Debug: Show count of email templates
+        // Debug: Show count of email templates and their keys (only when debugging)
         if (current_user_can('manage_options') && isset($_GET['debug'])) {
-            echo '<div class="notice notice-info"><p>Debug: Found ' . count($email_templates) . ' email templates.</p></div>';
+            echo '<div class="notice notice-info"><p>Debug: Found ' . count($email_templates) . ' email templates: ' . implode(', ', array_keys($email_templates)) . '</p></div>';
         }
         
         foreach ($email_templates as $type => $template): 
         ?>
         <div id="<?php echo str_replace('_', '-', $type); ?>-email" class="tab-content">
             <h2><?php echo esc_html($template['subject']); ?></h2>
+            <?php if (current_user_can('manage_options') && isset($_GET['debug'])): ?>
+                <p class="description" style="color: #666; font-size: 12px;">Debug: Template type "<?php echo esc_html($type); ?>" - ID: "<?php echo str_replace('_', '-', $type); ?>-email"</p>
+            <?php endif; ?>
             
             <table class="form-table">
                 <tr>
@@ -787,11 +816,20 @@ jQuery(document).ready(function($) {
     border-top: none;
     border-radius: 0 0 6px 6px;
     padding: 30px;
-    display: none;
+    display: none !important;
 }
 
 .wp-licensing-email-settings .tab-content.active {
-    display: block;
+    display: block !important;
+}
+
+/* Ensure all tab content is initially hidden except active */
+.wp-licensing-email-settings div[id$="-email"].tab-content {
+    display: none !important;
+}
+
+.wp-licensing-email-settings div[id$="-email"].tab-content.active {
+    display: block !important;
 }
 
 .wp-licensing-email-settings .tab-content h2 {
