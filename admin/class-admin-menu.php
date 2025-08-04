@@ -21,6 +21,8 @@ class WP_Licensing_Manager_Admin_Menu {
         add_action('wp_ajax_wp_licensing_manager_save_product', array($this, 'ajax_save_product'));
         add_action('wp_ajax_wp_licensing_manager_delete_product', array($this, 'ajax_delete_product'));
         add_action('wp_ajax_wp_licensing_manager_get_integration_code', array($this, 'ajax_get_integration_code'));
+        add_action('wp_ajax_wp_licensing_manager_export_data', array($this, 'ajax_export_data'));
+        add_action('wp_ajax_wp_licensing_manager_import_data', array($this, 'ajax_import_data'));
     }
 
     /**
@@ -71,6 +73,15 @@ class WP_Licensing_Manager_Admin_Menu {
             'manage_options',
             'wp-licensing-manager-settings',
             array($this, 'settings_page')
+        );
+
+        add_submenu_page(
+            'wp-licensing-manager',
+            __('Import/Export', 'wp-licensing-manager'),
+            __('Import/Export', 'wp-licensing-manager'),
+            'manage_options',
+            'wp-licensing-manager-import-export',
+            array($this, 'import_export_page')
         );
 
         // Add database repair submenu (only if tables are missing)
@@ -381,5 +392,427 @@ class WP_Licensing_Manager_Admin_Menu {
      */
     public function database_repair_page() {
         include WP_LICENSING_MANAGER_PLUGIN_DIR . 'admin/views/database-repair-admin.php';
+    }
+
+    /**
+     * Import/Export page
+     */
+    public function import_export_page() {
+        include WP_LICENSING_MANAGER_PLUGIN_DIR . 'admin/views/import-export.php';
+    }
+
+    /**
+     * AJAX: Export data
+     */
+    public function ajax_export_data() {
+        if (!wp_licensing_manager_verify_ajax_nonce('wp_licensing_manager_nonce')) {
+            wp_die('Security check failed');
+        }
+
+        if (!current_user_can('manage_options')) {
+            wp_die('Insufficient permissions');
+        }
+
+        $export_type = isset($_POST['export_type']) ? sanitize_text_field($_POST['export_type']) : '';
+        
+        if (empty($export_type)) {
+            wp_send_json_error('Missing export type');
+        }
+
+        global $wpdb;
+        $data = array();
+        $filename = '';
+
+        switch ($export_type) {
+            case 'licenses':
+                $licenses = $wpdb->get_results("
+                    SELECT l.*, p.name as product_name, p.slug as product_slug 
+                    FROM {$wpdb->prefix}licenses l 
+                    LEFT JOIN {$wpdb->prefix}license_products p ON l.product_id = p.id 
+                    ORDER BY l.created_at DESC
+                ");
+                
+                // Get activations for each license
+                foreach ($licenses as &$license) {
+                    $activations = $wpdb->get_results($wpdb->prepare("
+                        SELECT domain, ip_address, activated_at 
+                        FROM {$wpdb->prefix}license_activations 
+                        WHERE license_id = %d
+                    ", $license->id));
+                    $license->activations_data = $activations;
+                }
+                
+                $data = array(
+                    'type' => 'licenses',
+                    'version' => WP_LICENSING_MANAGER_VERSION,
+                    'exported_at' => current_time('mysql'),
+                    'count' => count($licenses),
+                    'data' => $licenses
+                );
+                $filename = 'wp-licensing-licenses-' . date('Y-m-d-H-i-s') . '.json';
+                break;
+
+            case 'products':
+                $products = $wpdb->get_results("
+                    SELECT * FROM {$wpdb->prefix}license_products 
+                    ORDER BY created_at DESC
+                ");
+                
+                // Get statistics for each product
+                foreach ($products as &$product) {
+                    $stats = $wpdb->get_row($wpdb->prepare("
+                        SELECT 
+                            COUNT(*) as total_licenses,
+                            SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active_licenses,
+                            SUM(activations) as total_activations
+                        FROM {$wpdb->prefix}licenses 
+                        WHERE product_id = %d
+                    ", $product->id));
+                    $product->statistics = $stats;
+                }
+                
+                $data = array(
+                    'type' => 'products',
+                    'version' => WP_LICENSING_MANAGER_VERSION,
+                    'exported_at' => current_time('mysql'),
+                    'count' => count($products),
+                    'data' => $products
+                );
+                $filename = 'wp-licensing-products-' . date('Y-m-d-H-i-s') . '.json';
+                break;
+
+            case 'full':
+                // Export everything
+                $licenses = $wpdb->get_results("
+                    SELECT l.*, p.name as product_name, p.slug as product_slug 
+                    FROM {$wpdb->prefix}licenses l 
+                    LEFT JOIN {$wpdb->prefix}license_products p ON l.product_id = p.id 
+                    ORDER BY l.created_at DESC
+                ");
+                
+                foreach ($licenses as &$license) {
+                    $activations = $wpdb->get_results($wpdb->prepare("
+                        SELECT domain, ip_address, activated_at 
+                        FROM {$wpdb->prefix}license_activations 
+                        WHERE license_id = %d
+                    ", $license->id));
+                    $license->activations_data = $activations;
+                }
+                
+                $products = $wpdb->get_results("
+                    SELECT * FROM {$wpdb->prefix}license_products 
+                    ORDER BY created_at DESC
+                ");
+                
+                $activations = $wpdb->get_results("
+                    SELECT * FROM {$wpdb->prefix}license_activations 
+                    ORDER BY activated_at DESC
+                ");
+                
+                $data = array(
+                    'type' => 'full',
+                    'version' => WP_LICENSING_MANAGER_VERSION,
+                    'exported_at' => current_time('mysql'),
+                    'licenses' => array('count' => count($licenses), 'data' => $licenses),
+                    'products' => array('count' => count($products), 'data' => $products),
+                    'activations' => array('count' => count($activations), 'data' => $activations)
+                );
+                $filename = 'wp-licensing-full-backup-' . date('Y-m-d-H-i-s') . '.json';
+                break;
+
+            default:
+                wp_send_json_error('Invalid export type');
+        }
+
+        wp_send_json_success(array(
+            'data' => $data,
+            'filename' => $filename
+        ));
+    }
+
+    /**
+     * AJAX: Import data
+     */
+    public function ajax_import_data() {
+        if (!wp_licensing_manager_verify_ajax_nonce('wp_licensing_manager_nonce')) {
+            wp_die('Security check failed');
+        }
+
+        if (!current_user_can('manage_options')) {
+            wp_die('Insufficient permissions');
+        }
+
+        if (!isset($_FILES['import_file']) || $_FILES['import_file']['error'] !== UPLOAD_ERR_OK) {
+            wp_send_json_error('No file uploaded or upload error');
+        }
+
+        $uploaded_file = $_FILES['import_file'];
+        
+        // Validate file type
+        $file_info = pathinfo($uploaded_file['name']);
+        if (strtolower($file_info['extension']) !== 'json') {
+            wp_send_json_error('Only JSON files are allowed');
+        }
+
+        // Read file content
+        $file_content = file_get_contents($uploaded_file['tmp_name']);
+        $data = json_decode($file_content, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            wp_send_json_error('Invalid JSON file: ' . json_last_error_msg());
+        }
+
+        // Validate data structure
+        if (!isset($data['type']) || !isset($data['version'])) {
+            wp_send_json_error('Invalid export file format');
+        }
+
+        global $wpdb;
+        $import_mode = isset($_POST['import_mode']) ? sanitize_text_field($_POST['import_mode']) : 'skip';
+        $results = array();
+
+        try {
+            $wpdb->query('START TRANSACTION');
+
+            switch ($data['type']) {
+                case 'licenses':
+                    $results = $this->import_licenses($data['data'], $import_mode);
+                    break;
+
+                case 'products':
+                    $results = $this->import_products($data['data'], $import_mode);
+                    break;
+
+                case 'full':
+                    // Import products first, then licenses
+                    $product_results = $this->import_products($data['products']['data'], $import_mode);
+                    $license_results = $this->import_licenses($data['licenses']['data'], $import_mode);
+                    
+                    $results = array(
+                        'products' => $product_results,
+                        'licenses' => $license_results,
+                        'total_imported' => $product_results['imported'] + $license_results['imported'],
+                        'total_skipped' => $product_results['skipped'] + $license_results['skipped'],
+                        'total_errors' => $product_results['errors'] + $license_results['errors']
+                    );
+                    break;
+
+                default:
+                    throw new Exception('Unsupported import type: ' . $data['type']);
+            }
+
+            $wpdb->query('COMMIT');
+            wp_send_json_success($results);
+
+        } catch (Exception $e) {
+            $wpdb->query('ROLLBACK');
+            wp_send_json_error('Import failed: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Import licenses from data array
+     */
+    private function import_licenses($licenses_data, $import_mode) {
+        global $wpdb;
+        $imported = 0;
+        $skipped = 0;
+        $errors = 0;
+        $messages = array();
+
+        foreach ($licenses_data as $license_data) {
+            try {
+                // Check if license exists
+                $existing = $wpdb->get_row($wpdb->prepare(
+                    "SELECT id FROM {$wpdb->prefix}licenses WHERE license_key = %s",
+                    $license_data->license_key
+                ));
+
+                if ($existing) {
+                    if ($import_mode === 'skip') {
+                        $skipped++;
+                        continue;
+                    } elseif ($import_mode === 'update') {
+                        // Update existing license
+                        $result = $wpdb->update(
+                            $wpdb->prefix . 'licenses',
+                            array(
+                                'product_id' => $license_data->product_id,
+                                'status' => $license_data->status,
+                                'expires_at' => $license_data->expires_at,
+                                'max_activations' => $license_data->max_activations,
+                                'activations' => $license_data->activations,
+                                'domains' => $license_data->domains,
+                                'customer_email' => $license_data->customer_email,
+                                'order_id' => $license_data->order_id
+                            ),
+                            array('id' => $existing->id),
+                            array('%d', '%s', '%s', '%d', '%d', '%s', '%s', '%d'),
+                            array('%d')
+                        );
+                        
+                        if ($result !== false) {
+                            $imported++;
+                            
+                            // Import activations data if available
+                            if (isset($license_data->activations_data) && is_array($license_data->activations_data)) {
+                                $this->import_license_activations($existing->id, $license_data->product_id, $license_data->activations_data);
+                            }
+                        } else {
+                            $errors++;
+                        }
+                    }
+                } else {
+                    // Insert new license
+                    $result = $wpdb->insert(
+                        $wpdb->prefix . 'licenses',
+                        array(
+                            'product_id' => $license_data->product_id,
+                            'license_key' => $license_data->license_key,
+                            'status' => $license_data->status,
+                            'expires_at' => $license_data->expires_at,
+                            'max_activations' => $license_data->max_activations,
+                            'activations' => $license_data->activations,
+                            'domains' => $license_data->domains,
+                            'customer_email' => $license_data->customer_email,
+                            'order_id' => $license_data->order_id,
+                            'created_at' => isset($license_data->created_at) ? $license_data->created_at : current_time('mysql')
+                        ),
+                        array('%d', '%s', '%s', '%s', '%d', '%d', '%s', '%s', '%d', '%s')
+                    );
+                    
+                    if ($result) {
+                        $imported++;
+                        $license_id = $wpdb->insert_id;
+                        
+                        // Import activations data if available
+                        if (isset($license_data->activations_data) && is_array($license_data->activations_data)) {
+                            $this->import_license_activations($license_id, $license_data->product_id, $license_data->activations_data);
+                        }
+                    } else {
+                        $errors++;
+                    }
+                }
+            } catch (Exception $e) {
+                $errors++;
+                $messages[] = 'Error importing license ' . $license_data->license_key . ': ' . $e->getMessage();
+            }
+        }
+
+        return array(
+            'imported' => $imported,
+            'skipped' => $skipped,
+            'errors' => $errors,
+            'messages' => $messages
+        );
+    }
+
+    /**
+     * Import products from data array
+     */
+    private function import_products($products_data, $import_mode) {
+        global $wpdb;
+        $imported = 0;
+        $skipped = 0;
+        $errors = 0;
+        $messages = array();
+
+        foreach ($products_data as $product_data) {
+            try {
+                // Check if product exists
+                $existing = $wpdb->get_row($wpdb->prepare(
+                    "SELECT id FROM {$wpdb->prefix}license_products WHERE slug = %s",
+                    $product_data->slug
+                ));
+
+                if ($existing) {
+                    if ($import_mode === 'skip') {
+                        $skipped++;
+                        continue;
+                    } elseif ($import_mode === 'update') {
+                        // Update existing product
+                        $result = $wpdb->update(
+                            $wpdb->prefix . 'license_products',
+                            array(
+                                'name' => $product_data->name,
+                                'latest_version' => $product_data->latest_version,
+                                'changelog' => $product_data->changelog,
+                                'update_file_path' => $product_data->update_file_path,
+                                'updated_at' => current_time('mysql')
+                            ),
+                            array('id' => $existing->id),
+                            array('%s', '%s', '%s', '%s', '%s'),
+                            array('%d')
+                        );
+                        
+                        if ($result !== false) {
+                            $imported++;
+                        } else {
+                            $errors++;
+                        }
+                    }
+                } else {
+                    // Insert new product
+                    $result = $wpdb->insert(
+                        $wpdb->prefix . 'license_products',
+                        array(
+                            'slug' => $product_data->slug,
+                            'name' => $product_data->name,
+                            'latest_version' => $product_data->latest_version,
+                            'changelog' => $product_data->changelog ?: '',
+                            'update_file_path' => $product_data->update_file_path ?: '',
+                            'created_at' => isset($product_data->created_at) ? $product_data->created_at : current_time('mysql')
+                        ),
+                        array('%s', '%s', '%s', '%s', '%s', '%s')
+                    );
+                    
+                    if ($result) {
+                        $imported++;
+                    } else {
+                        $errors++;
+                    }
+                }
+            } catch (Exception $e) {
+                $errors++;
+                $messages[] = 'Error importing product ' . $product_data->slug . ': ' . $e->getMessage();
+            }
+        }
+
+        return array(
+            'imported' => $imported,
+            'skipped' => $skipped,
+            'errors' => $errors,
+            'messages' => $messages
+        );
+    }
+
+    /**
+     * Import license activations
+     */
+    private function import_license_activations($license_id, $product_id, $activations_data) {
+        global $wpdb;
+        
+        foreach ($activations_data as $activation) {
+            // Check if activation already exists
+            $existing = $wpdb->get_row($wpdb->prepare(
+                "SELECT id FROM {$wpdb->prefix}license_activations WHERE license_id = %d AND domain = %s",
+                $license_id,
+                $activation->domain
+            ));
+            
+            if (!$existing) {
+                $wpdb->insert(
+                    $wpdb->prefix . 'license_activations',
+                    array(
+                        'license_id' => $license_id,
+                        'product_id' => $product_id,
+                        'domain' => $activation->domain,
+                        'ip_address' => $activation->ip_address ?: '',
+                        'activated_at' => $activation->activated_at
+                    ),
+                    array('%d', '%d', '%s', '%s', '%s')
+                );
+            }
+        }
     }
 }
