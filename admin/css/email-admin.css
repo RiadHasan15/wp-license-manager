@@ -19,66 +19,56 @@
     position: relative;
 }
 
-/* Tab Navigation Enhancement - Light Theme */
-.nav-tab-wrapper {
-    margin-bottom: 25px;
+/* Clean Light Theme - Only apply to email settings page */
+.wp-licensing-email-settings .nav-tab-wrapper {
+    margin-bottom: 0;
     background: #ffffff;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    border-radius: 8px 8px 0 0;
-    overflow: hidden;
-    border: 1px solid #e8f0fe;
+    border: 1px solid #dee2e6;
+    border-radius: 6px 6px 0 0;
 }
 
-.nav-tab {
-    border: none !important;
-    background: transparent !important;
-    color: #4a5568 !important;
-    font-weight: 500 !important;
-    padding: 15px 20px !important;
-    margin: 0 !important;
-    transition: all 0.3s ease !important;
-    position: relative !important;
+.wp-licensing-email-settings .nav-tab {
+    border: none;
+    background: #ffffff;
+    color: #495057;
+    font-weight: 500;
+    padding: 12px 20px;
+    margin: 0;
+    border-radius: 0;
 }
 
-.nav-tab:hover {
-    background: #f7fafc !important;
-    color: #3182ce !important;
+.wp-licensing-email-settings .nav-tab:hover {
+    background: #e9ecef;
+    color: #007cba;
 }
 
-.nav-tab.nav-tab-active {
-    background: linear-gradient(135deg, #e6f3ff 0%, #cce7ff 100%) !important;
-    color: #2d3748 !important;
-    box-shadow: none !important;
-    border-left: 3px solid #3182ce !important;
+.wp-licensing-email-settings .nav-tab.nav-tab-active {
+    background: #007cba;
+    color: #ffffff;
+    border-bottom: none;
 }
 
-.nav-tab.nav-tab-active::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: #3182ce;
-}
-
-/* Tab Content - Light Theme */
-.tab-content {
-    background: #fafbfc;
+/* Tab Content - Clean & Readable */
+.wp-licensing-email-settings .tab-content {
+    background: #ffffff;
     padding: 30px;
-    border-radius: 0 0 8px 8px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    border-radius: 0 0 6px 6px;
     margin-bottom: 20px;
-    border: 1px solid #e8f0fe;
+    border: 1px solid #dee2e6;
     border-top: none;
+    display: none;
 }
 
-.tab-content h2 {
+.wp-licensing-email-settings .tab-content.active {
+    display: block;
+}
+
+.wp-licensing-email-settings .tab-content h2 {
     margin-top: 0;
-    color: #2d3748;
+    color: #212529;
     font-size: 24px;
     font-weight: 600;
-    border-bottom: 2px solid #bee3f8;
+    border-bottom: 2px solid #007cba;
     padding-bottom: 10px;
     margin-bottom: 25px;
 }
@@ -87,34 +77,38 @@
    FORM ELEMENTS
    ================================================================= */
 
-.form-table th {
+.wp-licensing-email-settings .form-table th {
     font-weight: 600;
-    color: #4a5568;
+    color: #212529;
     width: 200px;
 }
 
-.form-table td {
+.wp-licensing-email-settings .form-table td {
     vertical-align: top;
     padding-top: 15px;
+    color: #495057;
 }
 
-.form-table input[type="text"],
-.form-table input[type="email"],
-.form-table input[type="number"] {
+.wp-licensing-email-settings .form-table input[type="text"],
+.wp-licensing-email-settings .form-table input[type="email"],
+.wp-licensing-email-settings .form-table input[type="number"] {
     padding: 8px 12px;
-    border: 1px solid #cbd5e0;
-    border-radius: 6px;
-    transition: all 0.3s ease;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
     background: #ffffff;
+    color: #495057;
 }
 
-.form-table input[type="text"]:focus,
-.form-table input[type="email"]:focus,
-.form-table input[type="number"]:focus {
-    border-color: #3182ce;
-    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+.wp-licensing-email-settings .form-table input[type="text"]:focus,
+.wp-licensing-email-settings .form-table input[type="email"]:focus,
+.wp-licensing-email-settings .form-table input[type="number"]:focus {
+    border-color: #007cba;
+    box-shadow: 0 0 0 2px rgba(0, 124, 186, 0.25);
     outline: none;
-    background: #ffffff;
+}
+
+.wp-licensing-email-settings .description {
+    color: #6c757d;
 }
 
 .form-table input[type="checkbox"] {
