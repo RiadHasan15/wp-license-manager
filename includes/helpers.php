@@ -210,3 +210,97 @@ function wp_licensing_manager_get_expiry_date($days = null) {
     
     return date('Y-m-d', strtotime('+' . $days . ' days'));
 }
+
+/**
+ * Get effective license duration for a WooCommerce product
+ * Uses preset if set, otherwise falls back to manual expiry days
+ *
+ * @param int $product_id WooCommerce product ID
+ * @return int Days until expiry (0 for lifetime)
+ */
+function wp_licensing_manager_get_product_license_duration($product_id) {
+    // Check for duration preset first
+    $duration_preset = get_post_meta($product_id, '_license_duration_preset', true);
+    
+    if (!empty($duration_preset)) {
+        return absint($duration_preset);
+    }
+    
+    // Fall back to manual expiry days
+    $manual_expiry = get_post_meta($product_id, '_license_expiry_days', true);
+    if (!empty($manual_expiry)) {
+        return absint($manual_expiry);
+    }
+    
+    // Default fallback
+    return get_option('wp_licensing_manager_default_expiry_days', 365);
+}
+
+/**
+ * Get grace period for a product
+ *
+ * @param int $product_id WooCommerce product ID
+ * @return int Grace period in days
+ */
+function wp_licensing_manager_get_product_grace_period($product_id) {
+    $grace_period = get_post_meta($product_id, '_license_grace_period', true);
+    return absint($grace_period);
+}
+
+/**
+ * Check if product has auto-renewal enabled
+ *
+ * @param int $product_id WooCommerce product ID
+ * @return bool
+ */
+function wp_licensing_manager_is_product_auto_renewal($product_id) {
+    $auto_renewal = get_post_meta($product_id, '_license_auto_renewal', true);
+    return $auto_renewal === 'yes';
+}
+
+/**
+ * Get trial period for a product
+ *
+ * @param int $product_id WooCommerce product ID
+ * @return int Trial period in days
+ */
+function wp_licensing_manager_get_product_trial_period($product_id) {
+    $trial_period = get_post_meta($product_id, '_license_trial_period', true);
+    return absint($trial_period);
+}
+
+/**
+ * Get usage limit for a product
+ *
+ * @param int $product_id WooCommerce product ID
+ * @return int Usage limit (0 for unlimited)
+ */
+function wp_licensing_manager_get_product_usage_limit($product_id) {
+    $usage_limit = get_post_meta($product_id, '_license_usage_limit', true);
+    return absint($usage_limit);
+}
+
+/**
+ * Check if license is in grace period
+ *
+ * @param object $license License object
+ * @param int $product_id WooCommerce product ID
+ * @return bool
+ */
+function wp_licensing_manager_is_license_in_grace_period($license, $product_id) {
+    if (empty($license->expires_at) || $license->expires_at === '0000-00-00') {
+        return false; // Lifetime license
+    }
+    
+    $grace_period = wp_licensing_manager_get_product_grace_period($product_id);
+    if ($grace_period <= 0) {
+        return false; // No grace period
+    }
+    
+    $expiry_time = strtotime($license->expires_at);
+    $grace_end_time = strtotime('+' . $grace_period . ' days', $expiry_time);
+    $current_time = time();
+    
+    // In grace period if expired but within grace period
+    return ($current_time > $expiry_time && $current_time <= $grace_end_time);
+}
