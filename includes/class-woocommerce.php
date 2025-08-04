@@ -958,753 +958,29 @@ class WP_Licensing_Manager_WooCommerce {
         
         ?>
         <style id="wp-licensing-manager-dashboard-styles">
-        /* ================================================================================================
-           WP LICENSING MANAGER - UNIVERSAL RESPONSIVE DASHBOARD STYLES 
-           Optimized for ALL devices, themes, and browsers
-           ================================================================================================ */
+        /* WP LICENSING MANAGER - MINIMAL STYLES FOR LICENSE FUNCTIONALITY ONLY */
         
-        /* UNIVERSAL CSS RESET & BASE STYLES */
-        body.woocommerce-account *,
-        .woocommerce-account *,
-        .woocommerce-MyAccount-navigation *,
-        .woocommerce-MyAccount-content * {
-            box-sizing: border-box !important;
-        }
+        /* Only style our license-specific elements - don't touch WooCommerce design */
         
-        /* RESPONSIVE FOUNDATION */
-        @media (max-width: 768px) {
-            body.woocommerce-account,
-            .woocommerce-account {
-                font-size: 14px !important;
-                line-height: 1.5 !important;
-            }
-        }
+        /* ENHANCED LICENSE DASHBOARD STYLES ONLY - DON'T TOUCH WOOCOMMERCE DESIGN */
         
-        /* ================================================================================================
-           UNIVERSAL RESPONSIVE LAYOUT FRAMEWORK
-           ================================================================================================ */
+
         
-        /* DESKTOP LAYOUT (1025px and up) */
-        @media (min-width: 1025px) {
-            body.woocommerce-account .woocommerce,
-            .woocommerce-account .woocommerce {
-                display: grid !important;
-                grid-template-columns: 280px 1fr !important;
-                gap: 40px !important;
-                max-width: 1400px !important;
-                margin: 0 auto !important;
-                padding: 40px 20px !important;
-            }
-        }
+
         
-        /* LARGE TABLET LAYOUT (769px - 1024px) */
-        @media (max-width: 1024px) and (min-width: 769px) {
-            body.woocommerce-account .woocommerce,
-            .woocommerce-account .woocommerce {
-                display: grid !important;
-                grid-template-columns: 250px 1fr !important;
-                gap: 30px !important;
-                max-width: 1200px !important;
-                margin: 0 auto !important;
-                padding: 30px 20px !important;
-            }
-        }
+
         
-        /* SMALL TABLET LAYOUT (481px - 768px) */
-        @media (max-width: 768px) and (min-width: 481px) {
-            body.woocommerce-account .woocommerce,
-            .woocommerce-account .woocommerce {
-                display: block !important;
-                max-width: 100% !important;
-                margin: 0 auto !important;
-                padding: 20px 16px !important;
-            }
-            
-            body.woocommerce-account .woocommerce-MyAccount-navigation,
-            .woocommerce-account .woocommerce-MyAccount-navigation {
-                margin-bottom: 20px !important;
-                position: sticky !important;
-                top: 20px !important;
-                z-index: 100 !important;
-            }
-        }
+
         
-        /* MOBILE LAYOUT (320px - 480px) */
-        @media (max-width: 480px) {
-            body.woocommerce-account .woocommerce,
-            .woocommerce-account .woocommerce {
-                display: block !important;
-                max-width: 100% !important;
-                margin: 0 !important;
-                padding: 15px 10px !important;
-            }
-            
-            body.woocommerce-account .woocommerce-MyAccount-navigation,
-            .woocommerce-account .woocommerce-MyAccount-navigation {
-                margin-bottom: 15px !important;
-                position: relative !important;
-                top: auto !important;
-            }
-        }
+
         
-        /* EXTRA SMALL MOBILE (under 320px) */
-        @media (max-width: 319px) {
-            body.woocommerce-account .woocommerce,
-            .woocommerce-account .woocommerce {
-                padding: 10px 5px !important;
-            }
-        }
+
         
-        /* THEME COMPATIBILITY OVERRIDES */
-        body.woocommerce-account .woocommerce *,
-        .woocommerce-account .woocommerce * {
-            box-sizing: border-box !important;
-        }
+
         
-        /* PREVENT LAYOUT BREAKS */
-        body.woocommerce-account .woocommerce-MyAccount-navigation,
-        body.woocommerce-account .woocommerce-MyAccount-content,
-        .woocommerce-account .woocommerce-MyAccount-navigation,
-        .woocommerce-account .woocommerce-MyAccount-content {
-            min-width: 0 !important;
-            word-wrap: break-word !important;
-            overflow-wrap: break-word !important;
-        }
+
         
-        /* ACCESSIBILITY IMPROVEMENTS */
-        @media (prefers-reduced-motion: reduce) {
-            body.woocommerce-account *,
-            .woocommerce-account * {
-                animation-duration: 0.01ms !important;
-                animation-iteration-count: 1 !important;
-                transition-duration: 0.01ms !important;
-            }
-        }
-        
-        /* HIGH CONTRAST MODE SUPPORT */
-        @media (prefers-contrast: high) {
-            body.woocommerce-account .woocommerce-MyAccount-navigation,
-            .woocommerce-account .woocommerce-MyAccount-navigation {
-                background: #000 !important;
-                border: 2px solid #fff !important;
-            }
-            
-            body.woocommerce-account .woocommerce-MyAccount-navigation a,
-            .woocommerce-account .woocommerce-MyAccount-navigation a {
-                color: #fff !important;
-                border-bottom: 1px solid #fff !important;
-            }
-        }
-        
-        /* ================================================================================================
-           RESPONSIVE DASHBOARD NAVIGATION
-           ================================================================================================ */
-        
-        /* DESKTOP NAVIGATION STYLES */
-        body.woocommerce-account .woocommerce-MyAccount-navigation,
-        .woocommerce-account .woocommerce-MyAccount-navigation {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-            border-radius: 16px !important;
-            padding: 0 !important;
-            box-shadow: 0 20px 60px rgba(102, 126, 234, 0.25) !important;
-            margin-bottom: 30px !important;
-            overflow: hidden !important;
-            position: relative !important;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        }
-        
-        /* HOVER ENHANCEMENT */
-        body.woocommerce-account .woocommerce-MyAccount-navigation:hover,
-        .woocommerce-account .woocommerce-MyAccount-navigation:hover {
-            box-shadow: 0 25px 80px rgba(102, 126, 234, 0.35) !important;
-            transform: translateY(-2px) !important;
-        }
-        
-        /* MOBILE NAVIGATION OPTIMIZATION */
-        @media (max-width: 768px) {
-            body.woocommerce-account .woocommerce-MyAccount-navigation,
-            .woocommerce-account .woocommerce-MyAccount-navigation {
-                border-radius: 12px !important;
-                margin-bottom: 20px !important;
-                box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2) !important;
-            }
-            
-            body.woocommerce-account .woocommerce-MyAccount-navigation:hover,
-            .woocommerce-account .woocommerce-MyAccount-navigation:hover {
-                transform: none !important;
-                box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2) !important;
-            }
-        }
-        
-        /* TABLET NAVIGATION */
-        @media (max-width: 1024px) and (min-width: 769px) {
-            body.woocommerce-account .woocommerce-MyAccount-navigation,
-            .woocommerce-account .woocommerce-MyAccount-navigation {
-                border-radius: 14px !important;
-                margin-bottom: 25px !important;
-            }
-        }
-        
-        /* NAVIGATION LIST STYLES */
-        body.woocommerce-account .woocommerce-MyAccount-navigation ul,
-        .woocommerce-account .woocommerce-MyAccount-navigation ul {
-            list-style: none !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            display: flex !important;
-            flex-direction: column !important;
-        }
-        
-        body.woocommerce-account .woocommerce-MyAccount-navigation li,
-        .woocommerce-account .woocommerce-MyAccount-navigation li {
-            margin: 0 !important;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
-            list-style: none !important;
-            position: relative !important;
-            overflow: hidden !important;
-        }
-        
-        body.woocommerce-account .woocommerce-MyAccount-navigation li:last-child,
-        .woocommerce-account .woocommerce-MyAccount-navigation li:last-child {
-            border-bottom: none !important;
-        }
-        
-        body.woocommerce-account .woocommerce-MyAccount-navigation li:first-child,
-        .woocommerce-account .woocommerce-MyAccount-navigation li:first-child {
-            border-top-left-radius: inherit !important;
-            border-top-right-radius: inherit !important;
-        }
-        
-        /* MOBILE NAVIGATION LIST */
-        @media (max-width: 768px) {
-            body.woocommerce-account .woocommerce-MyAccount-navigation li,
-            .woocommerce-account .woocommerce-MyAccount-navigation li {
-                border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-            }
-        }
-        
-        /* ================================================================================================
-           RESPONSIVE NAVIGATION LINKS
-           ================================================================================================ */
-        
-        /* DESKTOP NAVIGATION LINKS */
-        body.woocommerce-account .woocommerce-MyAccount-navigation a,
-        .woocommerce-account .woocommerce-MyAccount-navigation a {
-            display: flex !important;
-            align-items: center !important;
-            padding: 20px 28px !important;
-            color: rgba(255, 255, 255, 0.95) !important;
-            text-decoration: none !important;
-            font-weight: 500 !important;
-            font-size: 15px !important;
-            letter-spacing: 0.5px !important;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
-            position: relative !important;
-            overflow: hidden !important;
-            border: none !important;
-            background: transparent !important;
-            min-height: 60px !important;
-            z-index: 1 !important;
-            backdrop-filter: blur(10px) !important;
-        }
-        
-        /* TABLET NAVIGATION LINKS */
-        @media (max-width: 1024px) and (min-width: 769px) {
-            body.woocommerce-account .woocommerce-MyAccount-navigation a,
-            .woocommerce-account .woocommerce-MyAccount-navigation a {
-                padding: 18px 24px !important;
-                font-size: 14px !important;
-                min-height: 56px !important;
-                letter-spacing: 0.3px !important;
-            }
-        }
-        
-        /* MOBILE NAVIGATION LINKS */
-        @media (max-width: 768px) {
-            body.woocommerce-account .woocommerce-MyAccount-navigation a,
-            .woocommerce-account .woocommerce-MyAccount-navigation a {
-                padding: 16px 20px !important;
-                font-size: 14px !important;
-                min-height: 52px !important;
-                justify-content: center !important;
-                text-align: center !important;
-                font-weight: 600 !important;
-            }
-        }
-        
-        /* SMALL MOBILE OPTIMIZATION */
-        @media (max-width: 480px) {
-            body.woocommerce-account .woocommerce-MyAccount-navigation a,
-            .woocommerce-account .woocommerce-MyAccount-navigation a {
-                padding: 14px 16px !important;
-                font-size: 13px !important;
-                min-height: 48px !important;
-                letter-spacing: 0.2px !important;
-            }
-        }
-        
-        /* ================================================================================================
-           INTERACTIVE NAVIGATION EFFECTS
-           ================================================================================================ */
-        
-        /* SHIMMER EFFECT */
-        body.woocommerce-account .woocommerce-MyAccount-navigation a:before,
-        .woocommerce-account .woocommerce-MyAccount-navigation a:before {
-            content: '' !important;
-            position: absolute !important;
-            top: 0 !important;
-            left: -100% !important;
-            width: 100% !important;
-            height: 100% !important;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent) !important;
-            transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1) !important;
-            z-index: -1 !important;
-        }
-        
-        /* DESKTOP HOVER EFFECTS */
-        @media (min-width: 769px) {
-            body.woocommerce-account .woocommerce-MyAccount-navigation a:hover:before,
-            .woocommerce-account .woocommerce-MyAccount-navigation a:hover:before {
-                left: 100% !important;
-            }
-            
-            body.woocommerce-account .woocommerce-MyAccount-navigation a:hover,
-            .woocommerce-account .woocommerce-MyAccount-navigation a:hover {
-                background: rgba(255, 255, 255, 0.12) !important;
-                color: white !important;
-                transform: translateX(8px) !important;
-                text-decoration: none !important;
-                box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2) !important;
-            }
-        }
-        
-        /* MOBILE TOUCH EFFECTS */
-        @media (max-width: 768px) {
-            body.woocommerce-account .woocommerce-MyAccount-navigation a:hover,
-            body.woocommerce-account .woocommerce-MyAccount-navigation a:focus,
-            body.woocommerce-account .woocommerce-MyAccount-navigation a:active,
-            .woocommerce-account .woocommerce-MyAccount-navigation a:hover,
-            .woocommerce-account .woocommerce-MyAccount-navigation a:focus,
-            .woocommerce-account .woocommerce-MyAccount-navigation a:active {
-                background: rgba(255, 255, 255, 0.15) !important;
-                color: white !important;
-                transform: none !important;
-                text-decoration: none !important;
-                outline: none !important;
-            }
-            
-            body.woocommerce-account .woocommerce-MyAccount-navigation a:before,
-            .woocommerce-account .woocommerce-MyAccount-navigation a:before {
-                display: none !important;
-            }
-        }
-        
-        /* ================================================================================================
-           ACTIVE NAVIGATION STATE
-           ================================================================================================ */
-        
-        /* DESKTOP ACTIVE STATE */
-        body.woocommerce-account .woocommerce-MyAccount-navigation .is-active a,
-        .woocommerce-account .woocommerce-MyAccount-navigation .is-active a {
-            background: rgba(255, 255, 255, 0.25) !important;
-            color: white !important;
-            font-weight: 600 !important;
-            box-shadow: inset 4px 0 0 rgba(255, 255, 255, 0.9) !important;
-            transform: translateX(6px) !important;
-            backdrop-filter: blur(20px) !important;
-        }
-        
-        /* MOBILE ACTIVE STATE */
-        @media (max-width: 768px) {
-            body.woocommerce-account .woocommerce-MyAccount-navigation .is-active a,
-            .woocommerce-account .woocommerce-MyAccount-navigation .is-active a {
-                background: rgba(255, 255, 255, 0.3) !important;
-                transform: none !important;
-                box-shadow: inset 0 4px 0 rgba(255, 255, 255, 0.9) !important;
-                border-radius: 0 !important;
-            }
-        }
-        
-        /* Navigation items - Clean design without icons */
-        
-        /* ================================================================================================
-           RESPONSIVE CONTENT AREA
-           ================================================================================================ */
-        
-        /* DESKTOP CONTENT AREA */
-        body.woocommerce-account .woocommerce-MyAccount-content,
-        .woocommerce-account .woocommerce-MyAccount-content {
-            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%) !important;
-            border-radius: 20px !important;
-            padding: 40px !important;
-            box-shadow: 
-                0 20px 60px rgba(0, 0, 0, 0.08),
-                0 1px 3px rgba(0, 0, 0, 0.12) !important;
-            border: 1px solid rgba(255, 255, 255, 0.8) !important;
-            position: relative !important;
-            overflow: visible !important;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
-            backdrop-filter: blur(20px) !important;
-        }
-        
-        /* CONTENT AREA SUBTLE ANIMATION */
-        body.woocommerce-account .woocommerce-MyAccount-content:hover,
-        .woocommerce-account .woocommerce-MyAccount-content:hover {
-            box-shadow: 
-                0 25px 80px rgba(0, 0, 0, 0.12),
-                0 2px 6px rgba(0, 0, 0, 0.15) !important;
-            transform: translateY(-3px) !important;
-        }
-        
-        /* TABLET CONTENT AREA */
-        @media (max-width: 1024px) and (min-width: 769px) {
-            body.woocommerce-account .woocommerce-MyAccount-content,
-            .woocommerce-account .woocommerce-MyAccount-content {
-                padding: 32px !important;
-                border-radius: 16px !important;
-                box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08) !important;
-            }
-            
-            body.woocommerce-account .woocommerce-MyAccount-content:hover,
-            .woocommerce-account .woocommerce-MyAccount-content:hover {
-                transform: translateY(-2px) !important;
-            }
-        }
-        
-        /* MOBILE CONTENT AREA */
-        @media (max-width: 768px) {
-            body.woocommerce-account .woocommerce-MyAccount-content,
-            .woocommerce-account .woocommerce-MyAccount-content {
-                padding: 24px !important;
-                border-radius: 14px !important;
-                margin: 0 !important;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
-                background: #ffffff !important;
-            }
-            
-            body.woocommerce-account .woocommerce-MyAccount-content:hover,
-            .woocommerce-account .woocommerce-MyAccount-content:hover {
-                transform: none !important;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
-            }
-        }
-        
-        /* SMALL MOBILE CONTENT AREA */
-        @media (max-width: 480px) {
-            body.woocommerce-account .woocommerce-MyAccount-content,
-            .woocommerce-account .woocommerce-MyAccount-content {
-                padding: 20px !important;
-                border-radius: 12px !important;
-                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06) !important;
-                margin: 0 8px !important;
-            }
-        }
-        
-        /* ================================================================================================
-           RESPONSIVE TYPOGRAPHY
-           ================================================================================================ */
-        
-        /* DESKTOP HEADERS */
-        body.woocommerce-account .woocommerce-MyAccount-content h1,
-        body.woocommerce-account .woocommerce-MyAccount-content h2,
-        body.woocommerce-account .woocommerce-MyAccount-content h3,
-        .woocommerce-account .woocommerce-MyAccount-content h1,
-        .woocommerce-account .woocommerce-MyAccount-content h2,
-        .woocommerce-account .woocommerce-MyAccount-content h3 {
-            color: #1a202c !important;
-            font-weight: 700 !important;
-            margin-bottom: 32px !important;
-            padding-bottom: 16px !important;
-            position: relative !important;
-            display: block !important;
-            line-height: 1.3 !important;
-            letter-spacing: -0.025em !important;
-        }
-        
-        /* GRADIENT UNDERLINE EFFECT */
-        body.woocommerce-account .woocommerce-MyAccount-content h1:after,
-        body.woocommerce-account .woocommerce-MyAccount-content h2:after,
-        body.woocommerce-account .woocommerce-MyAccount-content h3:after,
-        .woocommerce-account .woocommerce-MyAccount-content h1:after,
-        .woocommerce-account .woocommerce-MyAccount-content h2:after,
-        .woocommerce-account .woocommerce-MyAccount-content h3:after {
-            content: '' !important;
-            position: absolute !important;
-            bottom: 0 !important;
-            left: 0 !important;
-            width: 60px !important;
-            height: 3px !important;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-            border-radius: 2px !important;
-        }
-        
-        /* HEADER SIZES */
-        body.woocommerce-account .woocommerce-MyAccount-content h1,
-        .woocommerce-account .woocommerce-MyAccount-content h1 {
-            font-size: 32px !important;
-        }
-        
-        body.woocommerce-account .woocommerce-MyAccount-content h2,
-        .woocommerce-account .woocommerce-MyAccount-content h2 {
-            font-size: 28px !important;
-        }
-        
-        body.woocommerce-account .woocommerce-MyAccount-content h3,
-        .woocommerce-account .woocommerce-MyAccount-content h3 {
-            font-size: 24px !important;
-        }
-        
-        /* TABLET HEADERS */
-        @media (max-width: 1024px) and (min-width: 769px) {
-            body.woocommerce-account .woocommerce-MyAccount-content h1,
-            .woocommerce-account .woocommerce-MyAccount-content h1 {
-                font-size: 28px !important;
-            }
-            
-            body.woocommerce-account .woocommerce-MyAccount-content h2,
-            .woocommerce-account .woocommerce-MyAccount-content h2 {
-                font-size: 24px !important;
-            }
-            
-            body.woocommerce-account .woocommerce-MyAccount-content h3,
-            .woocommerce-account .woocommerce-MyAccount-content h3 {
-                font-size: 20px !important;
-            }
-        }
-        
-        /* MOBILE HEADERS */
-        @media (max-width: 768px) {
-            body.woocommerce-account .woocommerce-MyAccount-content h1,
-            body.woocommerce-account .woocommerce-MyAccount-content h2,
-            body.woocommerce-account .woocommerce-MyAccount-content h3,
-            .woocommerce-account .woocommerce-MyAccount-content h1,
-            .woocommerce-account .woocommerce-MyAccount-content h2,
-            .woocommerce-account .woocommerce-MyAccount-content h3 {
-                margin-bottom: 24px !important;
-                padding-bottom: 12px !important;
-                text-align: center !important;
-            }
-            
-            body.woocommerce-account .woocommerce-MyAccount-content h1:after,
-            body.woocommerce-account .woocommerce-MyAccount-content h2:after,
-            body.woocommerce-account .woocommerce-MyAccount-content h3:after,
-            .woocommerce-account .woocommerce-MyAccount-content h1:after,
-            .woocommerce-account .woocommerce-MyAccount-content h2:after,
-            .woocommerce-account .woocommerce-MyAccount-content h3:after {
-                left: 50% !important;
-                transform: translateX(-50%) !important;
-                width: 40px !important;
-            }
-            
-            body.woocommerce-account .woocommerce-MyAccount-content h1,
-            .woocommerce-account .woocommerce-MyAccount-content h1 {
-                font-size: 24px !important;
-            }
-            
-            body.woocommerce-account .woocommerce-MyAccount-content h2,
-            .woocommerce-account .woocommerce-MyAccount-content h2 {
-                font-size: 20px !important;
-            }
-            
-            body.woocommerce-account .woocommerce-MyAccount-content h3,
-            .woocommerce-account .woocommerce-MyAccount-content h3 {
-                font-size: 18px !important;
-            }
-        }
-        
-        /* SMALL MOBILE HEADERS */
-        @media (max-width: 480px) {
-            body.woocommerce-account .woocommerce-MyAccount-content h1,
-            .woocommerce-account .woocommerce-MyAccount-content h1 {
-                font-size: 22px !important;
-            }
-            
-            body.woocommerce-account .woocommerce-MyAccount-content h2,
-            .woocommerce-account .woocommerce-MyAccount-content h2 {
-                font-size: 18px !important;
-            }
-            
-            body.woocommerce-account .woocommerce-MyAccount-content h3,
-            .woocommerce-account .woocommerce-MyAccount-content h3 {
-                font-size: 16px !important;
-            }
-        }
-        
-        /* ================================================================================================
-           RESPONSIVE TABLE DESIGN
-           ================================================================================================ */
-        
-        /* DESKTOP TABLE STYLES */
-        body.woocommerce-account .woocommerce table.shop_table_responsive,
-        .woocommerce-account .woocommerce table.shop_table_responsive,
-        body.woocommerce-account .shop_table_responsive,
-        .woocommerce-account .shop_table_responsive {
-            background: #ffffff !important;
-            border-radius: 16px !important;
-            overflow: hidden !important;
-            box-shadow: 
-                0 10px 40px rgba(0, 0, 0, 0.08),
-                0 1px 3px rgba(0, 0, 0, 0.12) !important;
-            border: 1px solid rgba(0, 0, 0, 0.06) !important;
-            margin-bottom: 30px !important;
-            transition: all 0.3s ease !important;
-            width: 100% !important;
-            border-collapse: separate !important;
-            border-spacing: 0 !important;
-        }
-        
-        /* TABLE HOVER EFFECT */
-        body.woocommerce-account .woocommerce table.shop_table_responsive:hover,
-        .woocommerce-account .woocommerce table.shop_table_responsive:hover,
-        body.woocommerce-account .shop_table_responsive:hover,
-        .woocommerce-account .shop_table_responsive:hover {
-            box-shadow: 
-                0 15px 60px rgba(0, 0, 0, 0.12),
-                0 2px 6px rgba(0, 0, 0, 0.15) !important;
-            transform: translateY(-2px) !important;
-        }
-        
-        /* TABLET TABLE STYLES */
-        @media (max-width: 1024px) and (min-width: 769px) {
-            body.woocommerce-account .woocommerce table.shop_table_responsive,
-            .woocommerce-account .woocommerce table.shop_table_responsive,
-            body.woocommerce-account .shop_table_responsive,
-            .woocommerce-account .shop_table_responsive {
-                border-radius: 12px !important;
-                margin-bottom: 25px !important;
-            }
-        }
-        
-        /* MOBILE TABLE STYLES */
-        @media (max-width: 768px) {
-            body.woocommerce-account .woocommerce table.shop_table_responsive,
-            .woocommerce-account .woocommerce table.shop_table_responsive,
-            body.woocommerce-account .shop_table_responsive,
-            .woocommerce-account .shop_table_responsive {
-                border-radius: 12px !important;
-                margin-bottom: 20px !important;
-                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06) !important;
-            }
-            
-            body.woocommerce-account .woocommerce table.shop_table_responsive:hover,
-            .woocommerce-account .woocommerce table.shop_table_responsive:hover,
-            body.woocommerce-account .shop_table_responsive:hover,
-            .woocommerce-account .shop_table_responsive:hover {
-                transform: none !important;
-                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06) !important;
-            }
-        }
-        
-        /* SMALL MOBILE TABLE STYLES */
-        @media (max-width: 480px) {
-            body.woocommerce-account .woocommerce table.shop_table_responsive,
-            .woocommerce-account .woocommerce table.shop_table_responsive,
-            body.woocommerce-account .shop_table_responsive,
-            .woocommerce-account .shop_table_responsive {
-                border-radius: 10px !important;
-                margin: 0 4px 15px 4px !important;
-                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06) !important;
-            }
-        }
-        
-        /* ================================================================================================
-           RESPONSIVE TABLE HEADERS
-           ================================================================================================ */
-        
-        /* DESKTOP TABLE HEADERS */
-        body.woocommerce-account .woocommerce table.shop_table_responsive thead,
-        .woocommerce-account .woocommerce table.shop_table_responsive thead,
-        body.woocommerce-account .shop_table_responsive thead,
-        .woocommerce-account .shop_table_responsive thead {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-            position: relative !important;
-        }
-        
-        body.woocommerce-account .woocommerce table.shop_table_responsive thead th,
-        .woocommerce-account .woocommerce table.shop_table_responsive thead th,
-        body.woocommerce-account .shop_table_responsive thead th,
-        .woocommerce-account .shop_table_responsive thead th {
-            color: rgba(255, 255, 255, 0.95) !important;
-            font-weight: 700 !important;
-            font-size: 14px !important;
-            text-transform: uppercase !important;
-            letter-spacing: 0.8px !important;
-            padding: 24px 20px !important;
-            border-bottom: none !important;
-            border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
-            text-align: left !important;
-            backdrop-filter: blur(10px) !important;
-        }
-        
-        body.woocommerce-account .woocommerce table.shop_table_responsive thead th:last-child,
-        .woocommerce-account .woocommerce table.shop_table_responsive thead th:last-child,
-        body.woocommerce-account .shop_table_responsive thead th:last-child,
-        .woocommerce-account .shop_table_responsive thead th:last-child {
-            border-right: none !important;
-        }
-        
-        /* TABLET TABLE HEADERS */
-        @media (max-width: 1024px) and (min-width: 769px) {
-            body.woocommerce-account .woocommerce table.shop_table_responsive thead th,
-            .woocommerce-account .woocommerce table.shop_table_responsive thead th,
-            body.woocommerce-account .shop_table_responsive thead th,
-            .woocommerce-account .shop_table_responsive thead th {
-                padding: 20px 16px !important;
-                font-size: 13px !important;
-                letter-spacing: 0.6px !important;
-            }
-        }
-        
-        /* MOBILE TABLE HEADERS */
-        @media (max-width: 768px) {
-            body.woocommerce-account .woocommerce table.shop_table_responsive thead th,
-            .woocommerce-account .woocommerce table.shop_table_responsive thead th,
-            body.woocommerce-account .shop_table_responsive thead th,
-            .woocommerce-account .shop_table_responsive thead th {
-                padding: 16px 12px !important;
-                font-size: 12px !important;
-                letter-spacing: 0.4px !important;
-                text-align: center !important;
-            }
-        }
-        
-        /* SMALL MOBILE TABLE HEADERS */
-        @media (max-width: 480px) {
-            body.woocommerce-account .woocommerce table.shop_table_responsive thead th,
-            .woocommerce-account .woocommerce table.shop_table_responsive thead th,
-            body.woocommerce-account .shop_table_responsive thead th,
-            .woocommerce-account .shop_table_responsive thead th {
-                padding: 12px 8px !important;
-                font-size: 11px !important;
-                letter-spacing: 0.3px !important;
-            }
-        }
-        
-        body.woocommerce-account .woocommerce table.shop_table_responsive tbody tr,
-        .woocommerce-account .woocommerce table.shop_table_responsive tbody tr,
-        body.woocommerce-account .shop_table_responsive tbody tr,
-        .woocommerce-account .shop_table_responsive tbody tr {
-            transition: all 0.3s ease !important;
-        }
-        
-        body.woocommerce-account .woocommerce table.shop_table_responsive tbody tr:hover,
-        .woocommerce-account .woocommerce table.shop_table_responsive tbody tr:hover,
-        body.woocommerce-account .shop_table_responsive tbody tr:hover,
-        .woocommerce-account .shop_table_responsive tbody tr:hover {
-            background: #f8f9fa !important;
-            transform: translateY(-1px) !important;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
-        }
-        
-        body.woocommerce-account .woocommerce table.shop_table_responsive tbody td,
-        .woocommerce-account .woocommerce table.shop_table_responsive tbody td,
-        body.woocommerce-account .shop_table_responsive tbody td,
-        .woocommerce-account .shop_table_responsive tbody td {
-            padding: 18px 16px !important;
-            border-bottom: 1px solid #f1f3f4 !important;
-            vertical-align: middle !important;
-        }
+        /* Only keep essential license-specific styling */
         
         /* License Expiry Cell Styling */
         .license-expiry-cell {
@@ -1834,74 +1110,19 @@ class WP_Licensing_Manager_WooCommerce {
             }
         }
         
-        /* ================================================================================================
-           ENHANCED LICENSE DASHBOARD - FULLY RESPONSIVE
-           ================================================================================================ */
-        
-        /* DESKTOP ENHANCED LICENSE CARDS */
+        /* Enhanced License Dashboard - MINIMAL STYLING */
         .enhanced-license-dashboard {
-            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%) !important;
-            border-radius: 20px !important;
-            padding: 32px !important;
-            box-shadow: 
-                0 20px 60px rgba(0, 0, 0, 0.08),
-                0 1px 3px rgba(0, 0, 0, 0.12) !important;
-            margin: 20px 0 !important;
-            border: 1px solid rgba(255, 255, 255, 0.8) !important;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
-            position: relative !important;
-            overflow: hidden !important;
-            backdrop-filter: blur(20px) !important;
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            margin: 10px 0;
+            border: 1px solid #e8ecef;
+            transition: box-shadow 0.2s ease;
         }
         
         .enhanced-license-dashboard:hover {
-            box-shadow: 
-                0 30px 80px rgba(0, 0, 0, 0.15),
-                0 2px 6px rgba(0, 0, 0, 0.15) !important;
-            transform: translateY(-4px) !important;
-        }
-        
-        /* TABLET ENHANCED LICENSE CARDS */
-        @media (max-width: 1024px) and (min-width: 769px) {
-            .enhanced-license-dashboard {
-                padding: 28px !important;
-                border-radius: 16px !important;
-                margin: 16px 0 !important;
-            }
-            
-            .enhanced-license-dashboard:hover {
-                transform: translateY(-3px) !important;
-            }
-        }
-        
-        /* MOBILE ENHANCED LICENSE CARDS */
-        @media (max-width: 768px) {
-            .enhanced-license-dashboard {
-                padding: 24px !important;
-                border-radius: 16px !important;
-                margin: 15px 0 !important;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
-                background: #ffffff !important;
-            }
-            
-            .enhanced-license-dashboard:hover {
-                transform: translateY(-2px) !important;
-                box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12) !important;
-            }
-        }
-        
-        /* SMALL MOBILE ENHANCED LICENSE CARDS */
-        @media (max-width: 480px) {
-            .enhanced-license-dashboard {
-                padding: 20px !important;
-                border-radius: 14px !important;
-                margin: 12px 0 !important;
-                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06) !important;
-            }
-            
-            .enhanced-license-dashboard:hover {
-                transform: translateY(-1px) !important;
-            }
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
         }
         
         /* License Header */
@@ -2336,6 +1557,55 @@ class WP_Licensing_Manager_WooCommerce {
             background: #28a745 !important;
             border-color: #28a745 !important;
             color: white !important;
+        }
+        
+        /* Minimal Mobile Responsiveness for License Elements Only */
+        @media (max-width: 768px) {
+            .enhanced-license-dashboard {
+                padding: 15px;
+                margin: 8px 0;
+                border-radius: 6px;
+            }
+            
+            .license-header {
+                flex-direction: column;
+                gap: 8px;
+                align-items: flex-start;
+            }
+            
+            .license-actions {
+                justify-content: center;
+                gap: 8px;
+            }
+            
+            .license-action-btn {
+                flex: 1;
+                justify-content: center;
+                font-size: 12px;
+                padding: 6px 12px;
+            }
+            
+            .domain-item {
+                flex-direction: column;
+                gap: 6px;
+                text-align: center;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .enhanced-license-dashboard {
+                padding: 12px;
+                margin: 6px 0;
+            }
+            
+            .license-action-btn {
+                font-size: 11px;
+                padding: 5px 10px;
+            }
+            
+            .action-text {
+                display: none;
+            }
         }
         
         </style>
