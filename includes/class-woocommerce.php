@@ -51,6 +51,11 @@ class WP_Licensing_Manager_WooCommerce {
         // Add professional dashboard styling
         add_action('wp_head', array($this, 'add_dashboard_styles'));
         add_action('woocommerce_account_navigation', array($this, 'add_dashboard_enhancements'));
+        
+        // Enhanced dashboard AJAX handlers
+        add_action('wp_ajax_wc_deactivate_license_domain', array($this, 'ajax_deactivate_license_domain'));
+        add_action('wp_ajax_wc_regenerate_license_key', array($this, 'ajax_regenerate_license_key'));
+        add_action('wp_ajax_wc_get_license_details', array($this, 'ajax_get_license_details'));
     }
 
     /**
@@ -596,48 +601,148 @@ class WP_Licensing_Manager_WooCommerce {
         $license = $this->get_license_for_download($download);
         
         if ($license) {
-            echo '<div class="wc-license-key-cell" data-license-id="' . esc_attr($license->id) . '">';
+            echo '<div class="wc-license-key-cell enhanced-license-dashboard" data-license-id="' . esc_attr($license->id) . '">';
             
-            // License key with responsive formatting
+            // Enhanced License Header with Status
+            echo '<div class="license-header">';
+            echo '<div class="license-key-section">';
             echo '<code class="wc-license-key" data-full-key="' . esc_attr($license->license_key) . '">';
             echo esc_html($license->license_key);
             echo '</code>';
             
-            // Copy button with responsive behavior
-            echo '<button type="button" class="button wc-copy-license" ';
-            echo 'data-license="' . esc_attr($license->license_key) . '" ';
-            echo 'title="' . esc_attr__('Copy License Key', 'wp-licensing-manager') . '" ';
-            echo 'aria-label="' . esc_attr__('Copy license key to clipboard', 'wp-licensing-manager') . '">';
-            echo '<span class="copy-text">' . esc_html__('Copy', 'wp-licensing-manager') . '</span>';
-            echo '<span class="copy-icon" aria-hidden="true">📋</span>';
-            echo '</button>';
+            // Enhanced Status Indicator with Color Coding
+            $status_class = 'status-' . $license->status;
+            $is_expiring = false;
+            $days_until_expiry = 0;
             
-            // Status and expiry information
-            echo '<div class="wc-license-status">';
-            echo '<small class="license-status-badge" data-status="' . esc_attr($license->status) . '">';
-            echo wp_licensing_manager_format_status($license->status);
-            echo '</small>';
-            
+            // Check if license is expiring soon (within 30 days)
             if (!empty($license->expires_at) && $license->expires_at !== '0000-00-00') {
-                echo '<small class="license-expiry">';
-                echo sprintf(__('Expires: %s', 'wp-licensing-manager'), 
-                    '<time datetime="' . esc_attr($license->expires_at) . '">' . 
-                    date_i18n(get_option('date_format'), strtotime($license->expires_at)) . 
-                    '</time>');
-                echo '</small>';
-            } else {
-                echo '<small class="license-expiry license-lifetime">';
-                echo esc_html__('Lifetime License', 'wp-licensing-manager');
-                echo '</small>';
+                $expiry_time = strtotime($license->expires_at);
+                $current_time = time();
+                $days_until_expiry = floor(($expiry_time - $current_time) / (24 * 60 * 60));
+                
+                if ($days_until_expiry <= 30 && $days_until_expiry > 0) {
+                    $is_expiring = true;
+                    $status_class .= ' status-expiring';
+                }
             }
             
-            // Activation count for mobile view
-            echo '<small class="license-activations" data-activations="' . esc_attr($license->activations) . '" data-max="' . esc_attr($license->max_activations) . '">';
-            echo sprintf(__('Activations: %d/%d', 'wp-licensing-manager'), 
-                (int)$license->activations, 
-                (int)$license->max_activations);
-            echo '</small>';
+            echo '<span class="enhanced-status-badge ' . esc_attr($status_class) . '" data-status="' . esc_attr($license->status) . '">';
+            if ($license->status === 'active' && $is_expiring) {
+                echo '<span class="status-icon">⚠️</span>' . esc_html__('Expiring Soon', 'wp-licensing-manager');
+            } else {
+                echo '<span class="status-icon">' . $this->get_status_icon($license->status) . '</span>';
+                echo wp_licensing_manager_format_status($license->status);
+            }
+            echo '</span>';
+            echo '</div>';
+            echo '</div>';
             
+            // Enhanced License Information Panel
+            echo '<div class="license-info-panel">';
+            
+            // Expiry Information with Countdown
+            echo '<div class="license-expiry-section">';
+            if (!empty($license->expires_at) && $license->expires_at !== '0000-00-00') {
+                echo '<div class="expiry-info">';
+                echo '<span class="expiry-label">' . esc_html__('Expires:', 'wp-licensing-manager') . '</span>';
+                echo '<time class="expiry-date" datetime="' . esc_attr($license->expires_at) . '">' . 
+                    date_i18n(get_option('date_format'), strtotime($license->expires_at)) . 
+                    '</time>';
+                
+                // Countdown Timer
+                if ($days_until_expiry > 0) {
+                    echo '<div class="countdown-timer" data-expiry="' . esc_attr($license->expires_at) . '">';
+                    if ($days_until_expiry <= 30) {
+                        echo '<span class="countdown-warning">';
+                        echo sprintf(_n('%d day remaining', '%d days remaining', $days_until_expiry, 'wp-licensing-manager'), $days_until_expiry);
+                        echo '</span>';
+                    } else {
+                        echo '<span class="countdown-normal">';
+                        echo sprintf(_n('%d day remaining', '%d days remaining', $days_until_expiry, 'wp-licensing-manager'), $days_until_expiry);
+                        echo '</span>';
+                    }
+                    echo '</div>';
+                } elseif ($days_until_expiry <= 0) {
+                    echo '<div class="countdown-expired">';
+                    echo esc_html__('Expired', 'wp-licensing-manager');
+                    echo '</div>';
+                }
+                echo '</div>';
+            } else {
+                echo '<div class="lifetime-license">';
+                echo '<span class="lifetime-icon">♾️</span>';
+                echo esc_html__('Lifetime License', 'wp-licensing-manager');
+                echo '</div>';
+            }
+            echo '</div>';
+            
+            // Domain Usage Visualization
+            echo '<div class="domain-usage-section">';
+            echo '<div class="usage-header">';
+            echo '<span class="usage-label">' . esc_html__('Activations:', 'wp-licensing-manager') . '</span>';
+            echo '<span class="usage-count">' . sprintf('%d/%d', (int)$license->activations, (int)$license->max_activations) . '</span>';
+            echo '</div>';
+            
+            // Usage Progress Bar
+            $usage_percentage = $license->max_activations > 0 ? ($license->activations / $license->max_activations) * 100 : 0;
+            $progress_class = $usage_percentage >= 100 ? 'usage-full' : ($usage_percentage >= 80 ? 'usage-high' : 'usage-normal');
+            
+            echo '<div class="usage-progress-bar">';
+            echo '<div class="usage-progress ' . esc_attr($progress_class) . '" style="width: ' . min(100, $usage_percentage) . '%"></div>';
+            echo '</div>';
+            
+            // Domain List (if activated)
+            if ($license->activations > 0 && !empty($license->domains)) {
+                $domains = explode(',', $license->domains);
+                $domains = array_filter(array_map('trim', $domains));
+                
+                if (!empty($domains)) {
+                    echo '<div class="active-domains">';
+                    echo '<span class="domains-label">' . esc_html__('Active Domains:', 'wp-licensing-manager') . '</span>';
+                    echo '<ul class="domains-list">';
+                    foreach ($domains as $domain) {
+                        echo '<li class="domain-item">';
+                        echo '<span class="domain-name">' . esc_html($domain) . '</span>';
+                        echo '<button type="button" class="domain-deactivate-btn" data-license-id="' . esc_attr($license->id) . '" data-domain="' . esc_attr($domain) . '" title="' . esc_attr__('Deactivate from this domain', 'wp-licensing-manager') . '">';
+                        echo '<span class="deactivate-icon">🚫</span>';
+                        echo '</button>';
+                        echo '</li>';
+                    }
+                    echo '</ul>';
+                    echo '</div>';
+                }
+            }
+            echo '</div>';
+            
+            // Quick Action Buttons
+            echo '<div class="license-actions">';
+            
+            // Copy License Key Button
+            echo '<button type="button" class="license-action-btn copy-license-btn" ';
+            echo 'data-license="' . esc_attr($license->license_key) . '" ';
+            echo 'title="' . esc_attr__('Copy License Key', 'wp-licensing-manager') . '">';
+            echo '<span class="action-icon">📋</span>';
+            echo '<span class="action-text">' . esc_html__('Copy Key', 'wp-licensing-manager') . '</span>';
+            echo '</button>';
+            
+            // Regenerate License Key Button (if allowed)
+            echo '<button type="button" class="license-action-btn regenerate-license-btn" ';
+            echo 'data-license-id="' . esc_attr($license->id) . '" ';
+            echo 'title="' . esc_attr__('Generate New License Key', 'wp-licensing-manager') . '">';
+            echo '<span class="action-icon">🔄</span>';
+            echo '<span class="action-text">' . esc_html__('Regenerate', 'wp-licensing-manager') . '</span>';
+            echo '</button>';
+            
+            // View Details Button
+            echo '<button type="button" class="license-action-btn view-details-btn" ';
+            echo 'data-license-id="' . esc_attr($license->id) . '" ';
+            echo 'title="' . esc_attr__('View License Details', 'wp-licensing-manager') . '">';
+            echo '<span class="action-icon">👁️</span>';
+            echo '<span class="action-text">' . esc_html__('Details', 'wp-licensing-manager') . '</span>';
+            echo '</button>';
+            
+            echo '</div>';
             echo '</div>';
             echo '</div>';
         } else {
@@ -661,6 +766,25 @@ class WP_Licensing_Manager_WooCommerce {
             }
         }
         return $downloads;
+    }
+
+    /**
+     * Get status icon for license status
+     *
+     * @param string $status
+     * @return string
+     */
+    private function get_status_icon($status) {
+        switch ($status) {
+            case 'active':
+                return '✅';
+            case 'inactive':
+                return '⏸️';
+            case 'expired':
+                return '❌';
+            default:
+                return '❓';
+        }
     }
 
     /**
@@ -1134,6 +1258,459 @@ class WP_Licensing_Manager_WooCommerce {
                 padding: 12px 8px;
             }
         }
+        
+        /* ENHANCED LICENSE DASHBOARD STYLES */
+        
+        /* Enhanced License Cell */
+        .enhanced-license-dashboard {
+            background: #fff !important;
+            border-radius: 12px !important;
+            padding: 20px !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08) !important;
+            margin: 10px 0 !important;
+            border: 1px solid #e8ecef !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .enhanced-license-dashboard:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12) !important;
+            transform: translateY(-2px) !important;
+        }
+        
+        /* License Header */
+        .license-header {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            margin-bottom: 15px !important;
+            padding-bottom: 15px !important;
+            border-bottom: 1px solid #e8ecef !important;
+        }
+        
+        .license-key-section {
+            flex: 1 !important;
+        }
+        
+        .wc-license-key {
+            background: #f8f9fa !important;
+            color: #495057 !important;
+            padding: 8px 12px !important;
+            border-radius: 6px !important;
+            font-family: 'Monaco', 'Consolas', monospace !important;
+            font-size: 13px !important;
+            display: inline-block !important;
+            margin-right: 10px !important;
+            border: 1px solid #e8ecef !important;
+        }
+        
+        /* Enhanced Status Badges */
+        .enhanced-status-badge {
+            display: inline-flex !important;
+            align-items: center !important;
+            padding: 6px 12px !important;
+            border-radius: 20px !important;
+            font-size: 12px !important;
+            font-weight: 600 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+        }
+        
+        .enhanced-status-badge .status-icon {
+            margin-right: 5px !important;
+            font-size: 14px !important;
+        }
+        
+        .status-active {
+            background: #d4edda !important;
+            color: #155724 !important;
+            border: 1px solid #c3e6cb !important;
+        }
+        
+        .status-expiring {
+            background: #fff3cd !important;
+            color: #856404 !important;
+            border: 1px solid #ffeaa7 !important;
+        }
+        
+        .status-expired {
+            background: #f8d7da !important;
+            color: #721c24 !important;
+            border: 1px solid #f5c6cb !important;
+        }
+        
+        .status-inactive {
+            background: #e2e3e5 !important;
+            color: #383d41 !important;
+            border: 1px solid #d6d8db !important;
+        }
+        
+        /* License Information Panel */
+        .license-info-panel {
+            display: grid !important;
+            gap: 15px !important;
+        }
+        
+        /* Expiry Section */
+        .license-expiry-section {
+            background: #f8f9fa !important;
+            padding: 15px !important;
+            border-radius: 8px !important;
+            border-left: 4px solid #007cba !important;
+        }
+        
+        .expiry-info {
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+        }
+        
+        .expiry-label {
+            font-weight: 600 !important;
+            color: #495057 !important;
+        }
+        
+        .expiry-date {
+            color: #007cba !important;
+            font-weight: 500 !important;
+        }
+        
+        .countdown-timer {
+            margin-top: 8px !important;
+        }
+        
+        .countdown-warning {
+            color: #e74c3c !important;
+            font-weight: 600 !important;
+            animation: pulse 2s infinite !important;
+        }
+        
+        .countdown-normal {
+            color: #27ae60 !important;
+            font-weight: 500 !important;
+        }
+        
+        .countdown-expired {
+            color: #e74c3c !important;
+            font-weight: 600 !important;
+            text-transform: uppercase !important;
+        }
+        
+        .lifetime-license {
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            color: #27ae60 !important;
+            font-weight: 600 !important;
+        }
+        
+        .lifetime-icon {
+            font-size: 18px !important;
+        }
+        
+        /* Domain Usage Section */
+        .domain-usage-section {
+            background: #fff !important;
+            padding: 15px !important;
+            border-radius: 8px !important;
+            border: 1px solid #e8ecef !important;
+        }
+        
+        .usage-header {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            margin-bottom: 10px !important;
+        }
+        
+        .usage-label {
+            font-weight: 600 !important;
+            color: #495057 !important;
+        }
+        
+        .usage-count {
+            color: #007cba !important;
+            font-weight: 600 !important;
+            font-size: 14px !important;
+        }
+        
+        /* Usage Progress Bar */
+        .usage-progress-bar {
+            width: 100% !important;
+            height: 8px !important;
+            background: #e9ecef !important;
+            border-radius: 4px !important;
+            overflow: hidden !important;
+            margin-bottom: 15px !important;
+        }
+        
+        .usage-progress {
+            height: 100% !important;
+            transition: width 0.3s ease !important;
+            border-radius: 4px !important;
+        }
+        
+        .usage-normal {
+            background: linear-gradient(90deg, #28a745, #20c997) !important;
+        }
+        
+        .usage-high {
+            background: linear-gradient(90deg, #ffc107, #fd7e14) !important;
+        }
+        
+        .usage-full {
+            background: linear-gradient(90deg, #dc3545, #e74c3c) !important;
+        }
+        
+        /* Active Domains */
+        .active-domains {
+            margin-top: 15px !important;
+        }
+        
+        .domains-label {
+            font-weight: 600 !important;
+            color: #495057 !important;
+            display: block !important;
+            margin-bottom: 8px !important;
+        }
+        
+        .domains-list {
+            list-style: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        
+        .domain-item {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            padding: 8px 12px !important;
+            margin: 4px 0 !important;
+            background: #f8f9fa !important;
+            border-radius: 6px !important;
+            border: 1px solid #e8ecef !important;
+        }
+        
+        .domain-name {
+            font-family: 'Monaco', 'Consolas', monospace !important;
+            font-size: 13px !important;
+            color: #495057 !important;
+        }
+        
+        .domain-deactivate-btn {
+            background: #dc3545 !important;
+            color: white !important;
+            border: none !important;
+            padding: 4px 8px !important;
+            border-radius: 4px !important;
+            cursor: pointer !important;
+            font-size: 12px !important;
+            transition: all 0.2s ease !important;
+        }
+        
+        .domain-deactivate-btn:hover {
+            background: #c82333 !important;
+            transform: scale(1.05) !important;
+        }
+        
+        /* License Actions */
+        .license-actions {
+            display: flex !important;
+            gap: 10px !important;
+            margin-top: 15px !important;
+            padding-top: 15px !important;
+            border-top: 1px solid #e8ecef !important;
+            flex-wrap: wrap !important;
+        }
+        
+        .license-action-btn {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            padding: 8px 16px !important;
+            border-radius: 6px !important;
+            border: 1px solid #007cba !important;
+            background: #fff !important;
+            color: #007cba !important;
+            text-decoration: none !important;
+            font-size: 13px !important;
+            font-weight: 500 !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+        }
+        
+        .license-action-btn:hover {
+            background: #007cba !important;
+            color: white !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 8px rgba(0, 124, 186, 0.3) !important;
+        }
+        
+        .copy-license-btn:hover {
+            background: #28a745 !important;
+            border-color: #28a745 !important;
+        }
+        
+        .regenerate-license-btn:hover {
+            background: #ffc107 !important;
+            border-color: #ffc107 !important;
+            color: #212529 !important;
+        }
+        
+        .action-icon {
+            font-size: 14px !important;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .license-header {
+                flex-direction: column !important;
+                gap: 10px !important;
+                align-items: flex-start !important;
+            }
+            
+            .license-actions {
+                justify-content: center !important;
+            }
+            
+            .license-action-btn {
+                flex: 1 !important;
+                justify-content: center !important;
+                min-width: 0 !important;
+            }
+            
+            .action-text {
+                display: none !important;
+            }
+            
+            .domain-item {
+                flex-direction: column !important;
+                gap: 8px !important;
+                text-align: center !important;
+            }
+        }
+        
+        /* Animations */
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .loading {
+            opacity: 0.6 !important;
+            pointer-events: none !important;
+        }
+        
+        /* Success/Error Messages */
+        .license-message {
+            padding: 10px 15px !important;
+            border-radius: 6px !important;
+            margin: 10px 0 !important;
+            font-size: 14px !important;
+        }
+        
+        .license-message.success {
+            background: #d4edda !important;
+            color: #155724 !important;
+            border: 1px solid #c3e6cb !important;
+        }
+        
+        .license-message.error {
+            background: #f8d7da !important;
+            color: #721c24 !important;
+            border: 1px solid #f5c6cb !important;
+        }
+        
+        /* License Details Modal */
+        .license-details-modal-overlay {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            background: rgba(0, 0, 0, 0.7) !important;
+            z-index: 999999 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        
+        .license-details-modal {
+            background: #fff !important;
+            border-radius: 12px !important;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+            max-width: 600px !important;
+            width: 90% !important;
+            max-height: 80vh !important;
+            overflow-y: auto !important;
+        }
+        
+        .modal-header {
+            padding: 20px !important;
+            border-bottom: 1px solid #e8ecef !important;
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+        }
+        
+        .modal-header h3 {
+            margin: 0 !important;
+            color: #495057 !important;
+            font-size: 20px !important;
+        }
+        
+        .modal-close {
+            background: none !important;
+            border: none !important;
+            font-size: 24px !important;
+            cursor: pointer !important;
+            color: #6c757d !important;
+            padding: 0 !important;
+            width: 30px !important;
+            height: 30px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            border-radius: 50% !important;
+            transition: all 0.2s ease !important;
+        }
+        
+        .modal-close:hover {
+            background: #f8f9fa !important;
+            color: #495057 !important;
+        }
+        
+        .modal-body {
+            padding: 20px !important;
+        }
+        
+        .modal-body p {
+            margin: 15px 0 !important;
+            line-height: 1.6 !important;
+        }
+        
+        .modal-body strong {
+            color: #495057 !important;
+            font-weight: 600 !important;
+        }
+        
+        .modal-body code {
+            background: #f8f9fa !important;
+            padding: 4px 8px !important;
+            border-radius: 4px !important;
+            font-family: 'Monaco', 'Consolas', monospace !important;
+            font-size: 13px !important;
+            color: #495057 !important;
+            border: 1px solid #e8ecef !important;
+        }
+        
+        /* Copy Success State */
+        .copy-success {
+            background: #28a745 !important;
+            border-color: #28a745 !important;
+            color: white !important;
+        }
+        
         </style>
         <?php
     }
@@ -1231,6 +1808,246 @@ class WP_Licensing_Manager_WooCommerce {
         ?>
         <script type="text/javascript">
         jQuery(document).ready(function($) {
+            // Enhanced License Dashboard Functionality
+            
+            // Copy License Key functionality
+            $(document).on('click', '.copy-license-btn', function(e) {
+                e.preventDefault();
+                var licenseKey = $(this).data('license');
+                var button = $(this);
+                
+                // Try modern clipboard API first
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(licenseKey).then(function() {
+                        showCopySuccess(button);
+                    }).catch(function() {
+                        fallbackCopy(licenseKey, button);
+                    });
+                } else {
+                    fallbackCopy(licenseKey, button);
+                }
+            });
+            
+            // Fallback copy method
+            function fallbackCopy(text, button) {
+                var temp = $('<input>');
+                $('body').append(temp);
+                temp.val(text).select();
+                document.execCommand('copy');
+                temp.remove();
+                showCopySuccess(button);
+            }
+            
+            // Show copy success feedback
+            function showCopySuccess(button) {
+                var originalHtml = button.html();
+                button.html('<span class="action-icon">✅</span><span class="action-text"><?php echo esc_js(__('Copied!', 'wp-licensing-manager')); ?></span>');
+                button.addClass('copy-success');
+                setTimeout(function() {
+                    button.html(originalHtml);
+                    button.removeClass('copy-success');
+                }, 2000);
+            }
+            
+            // Domain Deactivation
+            $(document).on('click', '.domain-deactivate-btn', function(e) {
+                e.preventDefault();
+                var button = $(this);
+                var licenseId = button.data('license-id');
+                var domain = button.data('domain');
+                
+                if (!confirm('<?php echo esc_js(__('Are you sure you want to deactivate this license from', 'wp-licensing-manager')); ?> ' + domain + '?')) {
+                    return;
+                }
+                
+                button.prop('disabled', true).html('<span class="deactivate-icon">⏳</span>');
+                
+                $.ajax({
+                    url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                    type: 'POST',
+                    data: {
+                        action: 'wc_deactivate_license_domain',
+                        license_id: licenseId,
+                        domain: domain,
+                        nonce: '<?php echo wp_create_nonce('wp_licensing_manager_customer_actions'); ?>'
+                    },
+                    success: function(response) {
+                        var data = JSON.parse(response);
+                        if (data.success) {
+                            button.closest('.domain-item').fadeOut(300, function() {
+                                $(this).remove();
+                                showMessage('Domain deactivated successfully', 'success');
+                                // Refresh the page to update activation counts
+                                setTimeout(function() {
+                                    location.reload();
+                                }, 1500);
+                            });
+                        } else {
+                            showMessage(data.error || 'Failed to deactivate domain', 'error');
+                            button.prop('disabled', false).html('<span class="deactivate-icon">🚫</span>');
+                        }
+                    },
+                    error: function() {
+                        showMessage('Network error occurred', 'error');
+                        button.prop('disabled', false).html('<span class="deactivate-icon">🚫</span>');
+                    }
+                });
+            });
+            
+            // License Regeneration
+            $(document).on('click', '.regenerate-license-btn', function(e) {
+                e.preventDefault();
+                var button = $(this);
+                var licenseId = button.data('license-id');
+                
+                if (!confirm('<?php echo esc_js(__('Are you sure you want to regenerate this license key? This will invalidate the current key.', 'wp-licensing-manager')); ?>')) {
+                    return;
+                }
+                
+                button.prop('disabled', true).html('<span class="action-icon">⏳</span><span class="action-text"><?php echo esc_js(__('Generating...', 'wp-licensing-manager')); ?></span>');
+                
+                $.ajax({
+                    url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                    type: 'POST',
+                    data: {
+                        action: 'wc_regenerate_license_key',
+                        license_id: licenseId,
+                        nonce: '<?php echo wp_create_nonce('wp_licensing_manager_customer_actions'); ?>'
+                    },
+                    success: function(response) {
+                        var data = JSON.parse(response);
+                        if (data.success) {
+                            // Update the license key display
+                            var licenseCell = button.closest('.enhanced-license-dashboard');
+                            var licenseKeyElement = licenseCell.find('.wc-license-key');
+                            licenseKeyElement.text(data.new_license_key);
+                            licenseKeyElement.attr('data-full-key', data.new_license_key);
+                            
+                            // Update copy button data
+                            licenseCell.find('.copy-license-btn').attr('data-license', data.new_license_key);
+                            
+                            showMessage(data.message, 'success');
+                            button.prop('disabled', false).html('<span class="action-icon">🔄</span><span class="action-text"><?php echo esc_js(__('Regenerate', 'wp-licensing-manager')); ?></span>');
+                        } else {
+                            showMessage(data.error || 'Failed to regenerate license key', 'error');
+                            button.prop('disabled', false).html('<span class="action-icon">🔄</span><span class="action-text"><?php echo esc_js(__('Regenerate', 'wp-licensing-manager')); ?></span>');
+                        }
+                    },
+                    error: function() {
+                        showMessage('Network error occurred', 'error');
+                        button.prop('disabled', false).html('<span class="action-icon">🔄</span><span class="action-text"><?php echo esc_js(__('Regenerate', 'wp-licensing-manager')); ?></span>');
+                    }
+                });
+            });
+            
+            // View License Details
+            $(document).on('click', '.view-details-btn', function(e) {
+                e.preventDefault();
+                var button = $(this);
+                var licenseId = button.data('license-id');
+                
+                button.prop('disabled', true).html('<span class="action-icon">⏳</span><span class="action-text"><?php echo esc_js(__('Loading...', 'wp-licensing-manager')); ?></span>');
+                
+                $.ajax({
+                    url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                    type: 'POST',
+                    data: {
+                        action: 'wc_get_license_details',
+                        license_id: licenseId,
+                        nonce: '<?php echo wp_create_nonce('wp_licensing_manager_customer_actions'); ?>'
+                    },
+                    success: function(response) {
+                        var data = JSON.parse(response);
+                        if (data.success) {
+                            showLicenseDetailsModal(data.license, data.product, data.activations);
+                        } else {
+                            showMessage(data.error || 'Failed to load license details', 'error');
+                        }
+                        button.prop('disabled', false).html('<span class="action-icon">👁️</span><span class="action-text"><?php echo esc_js(__('Details', 'wp-licensing-manager')); ?></span>');
+                    },
+                    error: function() {
+                        showMessage('Network error occurred', 'error');
+                        button.prop('disabled', false).html('<span class="action-icon">👁️</span><span class="action-text"><?php echo esc_js(__('Details', 'wp-licensing-manager')); ?></span>');
+                    }
+                });
+            });
+            
+            // Show message function
+            function showMessage(message, type) {
+                var messageDiv = $('<div class="license-message ' + type + '">' + message + '</div>');
+                $('.woocommerce-MyAccount-content').prepend(messageDiv);
+                setTimeout(function() {
+                    messageDiv.fadeOut(300, function() {
+                        $(this).remove();
+                    });
+                }, 5000);
+            }
+            
+            // Show license details modal
+            function showLicenseDetailsModal(license, product, activations) {
+                var modal = $('<div class="license-details-modal-overlay">');
+                var modalContent = $('<div class="license-details-modal">');
+                
+                modalContent.html(
+                    '<div class="modal-header">' +
+                    '<h3><?php echo esc_js(__('License Details', 'wp-licensing-manager')); ?></h3>' +
+                    '<button class="modal-close">×</button>' +
+                    '</div>' +
+                    '<div class="modal-body">' +
+                    '<p><strong><?php echo esc_js(__('Product:', 'wp-licensing-manager')); ?></strong> ' + (product ? product.name : 'Unknown') + '</p>' +
+                    '<p><strong><?php echo esc_js(__('License Key:', 'wp-licensing-manager')); ?></strong> <code>' + license.license_key + '</code></p>' +
+                    '<p><strong><?php echo esc_js(__('Status:', 'wp-licensing-manager')); ?></strong> ' + license.status + '</p>' +
+                    '<p><strong><?php echo esc_js(__('Created:', 'wp-licensing-manager')); ?></strong> ' + license.created_at + '</p>' +
+                    '<p><strong><?php echo esc_js(__('Expires:', 'wp-licensing-manager')); ?></strong> ' + (license.expires_at && license.expires_at !== '0000-00-00' ? license.expires_at : '<?php echo esc_js(__('Never', 'wp-licensing-manager')); ?>') + '</p>' +
+                    '<p><strong><?php echo esc_js(__('Activations:', 'wp-licensing-manager')); ?></strong> ' + license.activations + '/' + license.max_activations + '</p>' +
+                    '</div>'
+                );
+                
+                modal.append(modalContent);
+                $('body').append(modal);
+                
+                // Close modal functionality
+                modal.on('click', function(e) {
+                    if (e.target === modal[0] || $(e.target).hasClass('modal-close')) {
+                        modal.fadeOut(300, function() {
+                            modal.remove();
+                        });
+                    }
+                });
+            }
+            
+            // Real-time countdown updates
+            function updateCountdowns() {
+                $('.countdown-timer').each(function() {
+                    var element = $(this);
+                    var expiryDate = element.data('expiry');
+                    if (!expiryDate) return;
+                    
+                    var now = new Date().getTime();
+                    var expiry = new Date(expiryDate).getTime();
+                    var timeLeft = expiry - now;
+                    
+                    if (timeLeft > 0) {
+                        var days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+                        var countdownElement = element.find('.countdown-warning, .countdown-normal');
+                        
+                        if (days <= 30) {
+                            countdownElement.removeClass('countdown-normal').addClass('countdown-warning');
+                        }
+                        
+                        var text = days > 1 ? days + ' <?php echo esc_js(__('days remaining', 'wp-licensing-manager')); ?>' : days + ' <?php echo esc_js(__('day remaining', 'wp-licensing-manager')); ?>';
+                        countdownElement.text(text);
+                    } else {
+                        element.html('<span class="countdown-expired"><?php echo esc_js(__('Expired', 'wp-licensing-manager')); ?></span>');
+                    }
+                });
+            }
+            
+            // Update countdowns every minute
+            updateCountdowns();
+            setInterval(updateCountdowns, 60000);
+            
+            // Legacy copy button support
             $('.wc-copy-license').on('click', function(e) {
                 e.preventDefault();
                 var licenseKey = $(this).data('license');
@@ -1919,5 +2736,104 @@ class WP_Licensing_Manager_WooCommerce {
         });
         </script>
         <?php
+    }
+
+    /**
+     * AJAX handler for deactivating license from a domain
+     */
+    public function ajax_deactivate_license_domain() {
+        // Verify nonce and user permissions
+        if (!wp_verify_nonce($_POST['nonce'], 'wp_licensing_manager_customer_actions') || !is_user_logged_in()) {
+            wp_die(json_encode(array('success' => false, 'error' => 'Unauthorized')));
+        }
+
+        $license_id = absint($_POST['license_id']);
+        $domain = sanitize_text_field($_POST['domain']);
+        $current_user = wp_get_current_user();
+
+        // Verify the license belongs to the current user
+        $license_manager = new WP_Licensing_Manager_License_Manager();
+        $license = $license_manager->get_license($license_id);
+
+        if (!$license || $license->customer_email !== $current_user->user_email) {
+            wp_die(json_encode(array('success' => false, 'error' => 'License not found or access denied')));
+        }
+
+        // Use activation manager to deactivate
+        $activation_manager = new WP_Licensing_Manager_Activation_Manager();
+        $result = $activation_manager->deactivate_license($license->license_key, $domain);
+
+        wp_die(json_encode($result));
+    }
+
+    /**
+     * AJAX handler for regenerating license key
+     */
+    public function ajax_regenerate_license_key() {
+        // Verify nonce and user permissions
+        if (!wp_verify_nonce($_POST['nonce'], 'wp_licensing_manager_customer_actions') || !is_user_logged_in()) {
+            wp_die(json_encode(array('success' => false, 'error' => 'Unauthorized')));
+        }
+
+        $license_id = absint($_POST['license_id']);
+        $current_user = wp_get_current_user();
+
+        // Verify the license belongs to the current user
+        $license_manager = new WP_Licensing_Manager_License_Manager();
+        $license = $license_manager->get_license($license_id);
+
+        if (!$license || $license->customer_email !== $current_user->user_email) {
+            wp_die(json_encode(array('success' => false, 'error' => 'License not found or access denied')));
+        }
+
+        // Generate new license key
+        $new_license_key = wp_licensing_manager_generate_license_key();
+        $result = $license_manager->update_license($license_id, array('license_key' => $new_license_key));
+
+        if ($result) {
+            wp_die(json_encode(array(
+                'success' => true,
+                'new_license_key' => $new_license_key,
+                'message' => 'License key regenerated successfully'
+            )));
+        } else {
+            wp_die(json_encode(array('success' => false, 'error' => 'Failed to regenerate license key')));
+        }
+    }
+
+    /**
+     * AJAX handler for getting license details
+     */
+    public function ajax_get_license_details() {
+        // Verify nonce and user permissions
+        if (!wp_verify_nonce($_POST['nonce'], 'wp_licensing_manager_customer_actions') || !is_user_logged_in()) {
+            wp_die(json_encode(array('success' => false, 'error' => 'Unauthorized')));
+        }
+
+        $license_id = absint($_POST['license_id']);
+        $current_user = wp_get_current_user();
+
+        // Verify the license belongs to the current user
+        $license_manager = new WP_Licensing_Manager_License_Manager();
+        $license = $license_manager->get_license($license_id);
+
+        if (!$license || $license->customer_email !== $current_user->user_email) {
+            wp_die(json_encode(array('success' => false, 'error' => 'License not found or access denied')));
+        }
+
+        // Get detailed license information
+        $product_manager = new WP_Licensing_Manager_Product_Manager();
+        $product = $product_manager->get_product($license->product_id);
+
+        // Get activation details
+        $activation_manager = new WP_Licensing_Manager_Activation_Manager();
+        $activations = $activation_manager->get_activations_by_license($license_id);
+
+        wp_die(json_encode(array(
+            'success' => true,
+            'license' => $license,
+            'product' => $product,
+            'activations' => $activations
+        )));
     }
 }
