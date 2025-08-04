@@ -377,4 +377,25 @@ class WP_Licensing_Manager_Activation_Manager {
 
         return $stats;
     }
+
+    /**
+     * Get activations for a specific license
+     *
+     * @param int $license_id
+     * @return array
+     */
+    public function get_activations_by_license($license_id) {
+        global $wpdb;
+
+        $license_id = absint($license_id);
+
+        return $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT * FROM {$wpdb->prefix}license_activations 
+                 WHERE license_id = %d 
+                 ORDER BY activated_at DESC",
+                $license_id
+            )
+        );
+    }
 }
