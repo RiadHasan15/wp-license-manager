@@ -75,6 +75,11 @@ class WP_Licensing_Manager {
     public $admin_menu;
 
     /**
+     * Email Manager instance
+     */
+    public $email_manager;
+
+    /**
      * Get single instance
      */
     public static function get_instance() {
@@ -115,6 +120,7 @@ class WP_Licensing_Manager {
         require_once WP_LICENSING_MANAGER_PLUGIN_DIR . 'includes/class-api.php';
         require_once WP_LICENSING_MANAGER_PLUGIN_DIR . 'includes/class-woocommerce.php';
         require_once WP_LICENSING_MANAGER_PLUGIN_DIR . 'includes/class-updates.php';
+        require_once WP_LICENSING_MANAGER_PLUGIN_DIR . 'includes/class-email-manager.php';
         
         if (is_admin()) {
             require_once WP_LICENSING_MANAGER_PLUGIN_DIR . 'admin/class-admin-menu.php';
@@ -145,6 +151,7 @@ class WP_Licensing_Manager {
         
         $this->woocommerce = new WP_Licensing_Manager_WooCommerce();
         $this->updates = new WP_Licensing_Manager_Updates();
+        $this->email_manager = new WP_Licensing_Manager_Email_Manager();
         
         if (is_admin()) {
             $this->admin_menu = new WP_Licensing_Manager_Admin_Menu();
