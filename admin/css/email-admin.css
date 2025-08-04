@@ -1,0 +1,658 @@
+/**
+ * WP Licensing Manager Email Admin CSS
+ * 
+ * Professional styling for the email automation admin interface.
+ * 
+ * @package WP_Licensing_Manager
+ * @since 1.2.0
+ */
+
+/* =================================================================
+   EMAIL SETTINGS PAGE LAYOUT
+   ================================================================= */
+
+.wp-licensing-email-settings {
+    max-width: 1200px;
+}
+
+.wp-licensing-email-settings .wrap {
+    position: relative;
+}
+
+/* Tab Navigation Enhancement */
+.nav-tab-wrapper {
+    margin-bottom: 25px;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border-radius: 6px 6px 0 0;
+    overflow: hidden;
+}
+
+.nav-tab {
+    border: none !important;
+    background: transparent !important;
+    color: #555 !important;
+    font-weight: 500 !important;
+    padding: 15px 20px !important;
+    margin: 0 !important;
+    transition: all 0.3s ease !important;
+    position: relative !important;
+}
+
+.nav-tab:hover {
+    background: #f8f9fa !important;
+    color: #667eea !important;
+}
+
+.nav-tab.nav-tab-active {
+    background: #667eea !important;
+    color: white !important;
+    box-shadow: none !important;
+}
+
+.nav-tab.nav-tab-active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Tab Content */
+.tab-content {
+    background: #fff;
+    padding: 30px;
+    border-radius: 0 0 6px 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.tab-content h2 {
+    margin-top: 0;
+    color: #333;
+    font-size: 24px;
+    font-weight: 600;
+    border-bottom: 2px solid #667eea;
+    padding-bottom: 10px;
+    margin-bottom: 25px;
+}
+
+/* =================================================================
+   FORM ELEMENTS
+   ================================================================= */
+
+.form-table th {
+    font-weight: 600;
+    color: #333;
+    width: 200px;
+}
+
+.form-table td {
+    vertical-align: top;
+    padding-top: 15px;
+}
+
+.form-table input[type="text"],
+.form-table input[type="email"],
+.form-table input[type="number"] {
+    padding: 8px 12px;
+    border: 2px solid #e1e5e9;
+    border-radius: 4px;
+    transition: border-color 0.3s ease;
+}
+
+.form-table input[type="text"]:focus,
+.form-table input[type="email"]:focus,
+.form-table input[type="number"]:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    outline: none;
+}
+
+.form-table input[type="checkbox"] {
+    margin-right: 8px;
+    transform: scale(1.2);
+}
+
+/* Conditional Settings */
+.renewal-settings,
+.usage-tips-settings {
+    margin-top: 15px;
+    padding: 20px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+    animation: slideInDown 0.3s ease;
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.renewal-settings label,
+.usage-tips-settings label {
+    display: inline-block;
+    margin-right: 20px;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #555;
+}
+
+/* =================================================================
+   VARIABLES GRID
+   ================================================================= */
+
+.email-variables-help {
+    margin-top: 40px;
+    padding: 25px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.email-variables-help h3 {
+    margin-top: 0;
+    color: white;
+    font-size: 20px;
+    margin-bottom: 15px;
+}
+
+.email-variables-help .description {
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 20px;
+}
+
+.variables-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.variable-item {
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.variable-item:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+.variable-item code {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-family: 'Monaco', 'Consolas', monospace;
+    font-size: 13px;
+}
+
+/* =================================================================
+   EMAIL ACTIONS
+   ================================================================= */
+
+.email-actions {
+    margin-top: 25px;
+    padding: 20px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 8px;
+    border-left: 4px solid #28a745;
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.email-actions .button {
+    padding: 10px 20px;
+    font-weight: 500;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.email-actions .preview-email {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+.email-actions .preview-email:hover {
+    background: #5a67d8;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.email-actions .test-email {
+    background: #28a745;
+    color: white;
+    border-color: #28a745;
+}
+
+.email-actions .test-email:hover {
+    background: #218838;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+}
+
+.email-actions .button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.email-actions .button::before {
+    content: '';
+    display: inline-block;
+    width: 0;
+    height: 0;
+    margin-right: 0;
+    transition: all 0.3s ease;
+}
+
+.preview-email::before {
+    content: '👁️';
+    margin-right: 5px;
+}
+
+.test-email::before {
+    content: '📧';
+    margin-right: 5px;
+}
+
+/* =================================================================
+   EMAIL LOGS TABLE
+   ================================================================= */
+
+.email-logs-table {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+}
+
+.email-logs-table .wp-list-table {
+    margin: 0;
+    border: none;
+}
+
+.email-logs-table .wp-list-table th {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-weight: 600;
+    padding: 15px;
+    border: none;
+}
+
+.email-logs-table .wp-list-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #f1f3f4;
+    vertical-align: middle;
+}
+
+.email-logs-table .wp-list-table tr:last-child td {
+    border-bottom: none;
+}
+
+.email-logs-table .wp-list-table tr:hover {
+    background: #f8f9fa;
+}
+
+/* Email Type Badges */
+.email-type-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-block;
+}
+
+.email-type-welcome {
+    background: linear-gradient(135deg, #d4edda, #c3e6cb);
+    color: #155724;
+}
+
+.email-type-renewal-reminder {
+    background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+    color: #856404;
+}
+
+.email-type-grace-period {
+    background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+    color: #721c24;
+}
+
+.email-type-usage-tips {
+    background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+    color: #0c5460;
+}
+
+/* =================================================================
+   EMAIL PREVIEW MODAL
+   ================================================================= */
+
+.email-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px);
+}
+
+.email-modal-content {
+    background: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 900px;
+    max-height: 90%;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.email-modal-header {
+    padding: 25px 30px;
+    border-bottom: 1px solid #e8ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 12px 12px 0 0;
+}
+
+.email-modal-header h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.email-modal-close {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 8px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.email-modal-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: rotate(90deg);
+}
+
+.email-modal-body {
+    padding: 0;
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+}
+
+.email-modal-body iframe {
+    width: 100%;
+    height: 500px;
+    border: none;
+    flex: 1;
+}
+
+/* =================================================================
+   NOTICES
+   ================================================================= */
+
+.wp-licensing-notice {
+    animation: noticeSlideIn 0.3s ease;
+    margin: 20px 0;
+}
+
+@keyframes noticeSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.wp-licensing-notice.notice-success {
+    border-left-color: #28a745;
+    background: linear-gradient(135deg, #d4edda, #c3e6cb);
+}
+
+.wp-licensing-notice.notice-error {
+    border-left-color: #dc3545;
+    background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+}
+
+.wp-licensing-notice.notice-info {
+    border-left-color: #17a2b8;
+    background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+}
+
+/* =================================================================
+   RESPONSIVE DESIGN
+   ================================================================= */
+
+@media (max-width: 1200px) {
+    .variables-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .nav-tab-wrapper {
+        flex-wrap: wrap;
+    }
+    
+    .nav-tab {
+        padding: 12px 15px !important;
+        font-size: 14px !important;
+    }
+    
+    .tab-content {
+        padding: 20px;
+    }
+    
+    .variables-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .email-actions {
+        flex-direction: column;
+    }
+    
+    .email-actions .button {
+        width: 100%;
+        justify-content: center;
+        margin-bottom: 10px;
+    }
+    
+    .email-modal-content {
+        width: 95%;
+        max-height: 95%;
+    }
+    
+    .email-modal-header {
+        padding: 20px;
+    }
+    
+    .form-table th,
+    .form-table td {
+        display: block;
+        width: 100%;
+        padding: 10px 0;
+    }
+    
+    .form-table th {
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+}
+
+@media (max-width: 480px) {
+    .tab-content {
+        padding: 15px;
+    }
+    
+    .email-variables-help {
+        padding: 20px;
+    }
+    
+    .variable-item {
+        padding: 12px;
+    }
+    
+    .email-actions {
+        padding: 15px;
+    }
+    
+    .renewal-settings,
+    .usage-tips-settings {
+        padding: 15px;
+    }
+}
+
+/* =================================================================
+   DARK MODE SUPPORT
+   ================================================================= */
+
+@media (prefers-color-scheme: dark) {
+    .tab-content {
+        background: #2c3e50;
+        color: #ecf0f1;
+    }
+    
+    .tab-content h2 {
+        color: #ecf0f1;
+    }
+    
+    .form-table th {
+        color: #ecf0f1;
+    }
+    
+    .form-table input[type="text"],
+    .form-table input[type="email"],
+    .form-table input[type="number"] {
+        background: #34495e;
+        color: #ecf0f1;
+        border-color: #4a5f7a;
+    }
+    
+    .renewal-settings,
+    .usage-tips-settings {
+        background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+        color: #ecf0f1;
+    }
+}
+
+/* =================================================================
+   ACCESSIBILITY IMPROVEMENTS
+   ================================================================= */
+
+.nav-tab:focus,
+.button:focus,
+input:focus,
+textarea:focus {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+}
+
+.email-modal-close:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.8);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    .nav-tab.nav-tab-active {
+        background: #000 !important;
+        color: #fff !important;
+        border: 2px solid #fff !important;
+    }
+    
+    .email-actions .button {
+        border-width: 3px !important;
+    }
+}
+
+/* =================================================================
+   PRINT STYLES
+   ================================================================= */
+
+@media print {
+    .email-actions,
+    .nav-tab-wrapper,
+    .email-modal {
+        display: none !important;
+    }
+    
+    .tab-content {
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+    }
+    
+    .variables-grid {
+        display: block !important;
+    }
+    
+    .variable-item {
+        break-inside: avoid;
+        margin-bottom: 10px;
+    }
+}

@@ -33,6 +33,9 @@ class WP_Licensing_Manager_WooCommerce {
         add_action('woocommerce_order_status_completed', array($this, 'generate_license_on_order_complete'));
         add_action('woocommerce_order_status_processing', array($this, 'generate_license_on_order_complete'));
         
+        // Email automation trigger (SAFE - only adds new functionality)
+        add_action('wp_licensing_manager_send_usage_tips', array($this, 'trigger_usage_tips_email'));
+        
         // Order refund hook
         add_action('woocommerce_order_status_refunded', array($this, 'disable_licenses_on_refund'));
         add_action('woocommerce_order_status_cancelled', array($this, 'disable_licenses_on_refund'));
@@ -457,8 +460,11 @@ class WP_Licensing_Manager_WooCommerce {
                 $license_id = $license_manager->create_license($license_args);
 
                 if ($license_id) {
-                    // Send email to customer
+                    // Send email to customer (legacy system)
                     $this->send_license_email($order, $license_manager->get_license($license_id));
+                    
+                    // Trigger new email automation system (SAFE - only adds new functionality)
+                    do_action('wp_licensing_manager_license_created', $license_id, $order_id);
                 }
             }
         }
@@ -2732,5 +2738,19 @@ class WP_Licensing_Manager_WooCommerce {
             'product' => $product,
             'activations' => $activations
         )));
+    }
+
+    /**
+     * Trigger usage tips email for an order (SAFE - only adds new functionality)
+     * This is called by the scheduled hook wp_licensing_manager_send_usage_tips
+     */
+    public function trigger_usage_tips_email($order_id) {
+        // Get licenses for this order
+        $licenses = $this->get_order_licenses($order_id);
+        
+        foreach ($licenses as $license) {
+            // Trigger usage tips email for each license
+            do_action('wp_licensing_manager_send_usage_tips_email', $license->id);
+        }
     }
 }
