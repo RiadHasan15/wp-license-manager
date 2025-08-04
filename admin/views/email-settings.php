@@ -147,9 +147,14 @@ foreach ($default_templates as $type => $default_template) {
         $email_templates[$type] = wp_parse_args($email_templates[$type], $default_template);
     }
 }
+
+// Ensure we always have templates to display
+if (empty($email_templates)) {
+    $email_templates = $default_templates;
+}
 ?>
 
-<div class="wrap">
+<div class="wrap wp-licensing-email-settings">
     <h1><?php _e('Email Automation Settings', 'wp-licensing-manager'); ?></h1>
     <p class="description"><?php _e('Configure automated email sequences for license lifecycle management. All emails are fully customizable and can be enabled/disabled individually.', 'wp-licensing-manager'); ?></p>
 
@@ -304,7 +309,14 @@ foreach ($default_templates as $type => $default_template) {
         </div>
 
         <!-- Email Template Tabs -->
-        <?php foreach ($email_templates as $type => $template): ?>
+        <?php 
+        // Debug: Show count of email templates
+        if (current_user_can('manage_options') && isset($_GET['debug'])) {
+            echo '<div class="notice notice-info"><p>Debug: Found ' . count($email_templates) . ' email templates.</p></div>';
+        }
+        
+        foreach ($email_templates as $type => $template): 
+        ?>
         <div id="<?php echo str_replace('_', '-', $type); ?>-email" class="tab-content">
             <h2><?php echo esc_html($template['subject']); ?></h2>
             
@@ -663,7 +675,7 @@ jQuery(document).ready(function($) {
                 template_type: templateType,
                 content: content,
                 heading: heading,
-                nonce: wpLicensingEmailAdmin.nonce
+                nonce: (typeof wpLicensingEmailAdmin !== 'undefined') ? wpLicensingEmailAdmin.nonce : ''
             },
             success: function(response) {
                 // Show modal with preview
@@ -678,7 +690,11 @@ jQuery(document).ready(function($) {
     
     // Test email functionality
     $('.test-email').on('click', function() {
-        if (!confirm(wpLicensingEmailAdmin.strings.confirm_test)) {
+        var confirmMessage = (typeof wpLicensingEmailAdmin !== 'undefined' && wpLicensingEmailAdmin.strings) 
+            ? wpLicensingEmailAdmin.strings.confirm_test 
+            : 'Send test email to your admin email?';
+            
+        if (!confirm(confirmMessage)) {
             return;
         }
         
@@ -694,7 +710,7 @@ jQuery(document).ready(function($) {
             data: {
                 action: 'wp_licensing_test_email',
                 template_type: templateType,
-                nonce: wpLicensingEmailAdmin.nonce
+                nonce: (typeof wpLicensingEmailAdmin !== 'undefined') ? wpLicensingEmailAdmin.nonce : ''
             },
             success: function(response) {
                 var data = JSON.parse(response);
@@ -726,3 +742,144 @@ jQuery(document).ready(function($) {
     });
 });
 </script>
+
+<!-- Light Theme Override CSS -->
+<style>
+/* Light Theme Email Automation Admin */
+.wp-licensing-email-settings .nav-tab-wrapper {
+    background: #ffffff !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+    border-radius: 8px 8px 0 0 !important;
+    border: 1px solid #e8f0fe !important;
+}
+
+.wp-licensing-email-settings .nav-tab {
+    background: transparent !important;
+    color: #4a5568 !important;
+    border: none !important;
+    transition: all 0.3s ease !important;
+}
+
+.wp-licensing-email-settings .nav-tab:hover {
+    background: #f7fafc !important;
+    color: #3182ce !important;
+}
+
+.wp-licensing-email-settings .nav-tab.nav-tab-active {
+    background: linear-gradient(135deg, #e6f3ff 0%, #cce7ff 100%) !important;
+    color: #2d3748 !important;
+    border-left: 3px solid #3182ce !important;
+}
+
+.wp-licensing-email-settings .tab-content {
+    background: #fafbfc !important;
+    border: 1px solid #e8f0fe !important;
+    border-top: none !important;
+    border-radius: 0 0 8px 8px !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
+.wp-licensing-email-settings .tab-content h2 {
+    color: #2d3748 !important;
+    border-bottom: 2px solid #bee3f8 !important;
+}
+
+.wp-licensing-email-settings .form-table th {
+    color: #4a5568 !important;
+}
+
+.wp-licensing-email-settings .form-table input[type="text"],
+.wp-licensing-email-settings .form-table input[type="email"],
+.wp-licensing-email-settings .form-table input[type="number"] {
+    border: 1px solid #cbd5e0 !important;
+    background: #ffffff !important;
+    border-radius: 6px !important;
+}
+
+.wp-licensing-email-settings .form-table input:focus {
+    border-color: #3182ce !important;
+    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1) !important;
+}
+
+.wp-licensing-email-settings .renewal-settings,
+.wp-licensing-email-settings .usage-tips-settings {
+    background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%) !important;
+    border: 1px solid #bee3f8 !important;
+    border-left: 3px solid #63b3ed !important;
+}
+
+.wp-licensing-email-settings .email-variables-help {
+    background: linear-gradient(135deg, #e6f3ff 0%, #cce7ff 100%) !important;
+    color: #2d3748 !important;
+    border: 1px solid #bee3f8 !important;
+    box-shadow: 0 2px 8px rgba(49, 130, 206, 0.1) !important;
+}
+
+.wp-licensing-email-settings .variable-item {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+.wp-licensing-email-settings .variable-item:hover {
+    background: #f7fafc !important;
+    border-color: #bee3f8 !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+}
+
+.wp-licensing-email-settings .variable-item code {
+    background: #e6f3ff !important;
+    color: #2b6cb0 !important;
+    border: 1px solid #bee3f8 !important;
+}
+
+.wp-licensing-email-settings .email-actions {
+    background: linear-gradient(135deg, #f0fff4 0%, #e6fffa 100%) !important;
+    border: 1px solid #c6f6d5 !important;
+    border-left: 3px solid #48bb78 !important;
+}
+
+.wp-licensing-email-settings .preview-email {
+    background: #4299e1 !important;
+    border-color: #4299e1 !important;
+}
+
+.wp-licensing-email-settings .preview-email:hover {
+    background: #3182ce !important;
+    box-shadow: 0 3px 10px rgba(66, 153, 225, 0.3) !important;
+}
+
+.wp-licensing-email-settings .test-email {
+    background: #48bb78 !important;
+    border-color: #48bb78 !important;
+}
+
+.wp-licensing-email-settings .test-email:hover {
+    background: #38a169 !important;
+    box-shadow: 0 3px 10px rgba(72, 187, 120, 0.3) !important;
+}
+
+.wp-licensing-email-settings .wp-list-table th {
+    background: linear-gradient(135deg, #e6f3ff 0%, #cce7ff 100%) !important;
+    color: #2d3748 !important;
+}
+
+.wp-licensing-email-settings .email-modal-header {
+    background: linear-gradient(135deg, #e6f3ff 0%, #cce7ff 100%) !important;
+    color: #2d3748 !important;
+}
+
+/* Tab Content Display Control */
+.wp-licensing-email-settings .tab-content {
+    display: none !important;
+}
+
+.wp-licensing-email-settings .tab-content.active {
+    display: block !important;
+}
+
+/* Force light theme override */
+.wp-licensing-email-settings * {
+    box-sizing: border-box;
+}
+</style>
