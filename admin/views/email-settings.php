@@ -743,143 +743,266 @@ jQuery(document).ready(function($) {
 });
 </script>
 
-<!-- Light Theme Override CSS -->
+<!-- Clean Light Theme CSS -->
 <style>
-/* Light Theme Email Automation Admin */
+/* Email Automation Light Theme - Readable & Clean */
+.wp-licensing-email-settings {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+/* Tab Navigation - Light & Clean */
 .wp-licensing-email-settings .nav-tab-wrapper {
-    background: #ffffff !important;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
-    border-radius: 8px 8px 0 0 !important;
-    border: 1px solid #e8f0fe !important;
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 6px 6px 0 0;
+    margin-bottom: 0;
 }
 
 .wp-licensing-email-settings .nav-tab {
-    background: transparent !important;
-    color: #4a5568 !important;
-    border: none !important;
-    transition: all 0.3s ease !important;
+    background: #ffffff;
+    color: #495057;
+    border: none;
+    padding: 12px 20px;
+    margin: 0;
+    border-radius: 0;
 }
 
 .wp-licensing-email-settings .nav-tab:hover {
-    background: #f7fafc !important;
-    color: #3182ce !important;
+    background: #e9ecef;
+    color: #007cba;
 }
 
 .wp-licensing-email-settings .nav-tab.nav-tab-active {
-    background: linear-gradient(135deg, #e6f3ff 0%, #cce7ff 100%) !important;
-    color: #2d3748 !important;
-    border-left: 3px solid #3182ce !important;
+    background: #007cba;
+    color: #ffffff;
+    border-bottom: none;
 }
 
+/* Tab Content - Clean White Background */
 .wp-licensing-email-settings .tab-content {
-    background: #fafbfc !important;
-    border: 1px solid #e8f0fe !important;
-    border-top: none !important;
-    border-radius: 0 0 8px 8px !important;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    padding: 30px;
+    display: none;
+}
+
+.wp-licensing-email-settings .tab-content.active {
+    display: block;
 }
 
 .wp-licensing-email-settings .tab-content h2 {
-    color: #2d3748 !important;
-    border-bottom: 2px solid #bee3f8 !important;
+    color: #212529;
+    border-bottom: 2px solid #007cba;
+    padding-bottom: 10px;
+    margin-bottom: 25px;
 }
 
+/* Form Elements - Readable */
 .wp-licensing-email-settings .form-table th {
-    color: #4a5568 !important;
+    color: #212529;
+    font-weight: 600;
+}
+
+.wp-licensing-email-settings .form-table td {
+    color: #495057;
 }
 
 .wp-licensing-email-settings .form-table input[type="text"],
 .wp-licensing-email-settings .form-table input[type="email"],
 .wp-licensing-email-settings .form-table input[type="number"] {
-    border: 1px solid #cbd5e0 !important;
-    background: #ffffff !important;
-    border-radius: 6px !important;
+    border: 1px solid #ced4da;
+    background: #ffffff;
+    color: #495057;
+    padding: 8px 12px;
+    border-radius: 4px;
 }
 
 .wp-licensing-email-settings .form-table input:focus {
-    border-color: #3182ce !important;
-    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1) !important;
+    border-color: #007cba;
+    box-shadow: 0 0 0 2px rgba(0, 124, 186, 0.25);
+    outline: none;
 }
 
+/* Description Text */
+.wp-licensing-email-settings .description {
+    color: #6c757d;
+}
+
+/* Settings Sections */
 .wp-licensing-email-settings .renewal-settings,
 .wp-licensing-email-settings .usage-tips-settings {
-    background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%) !important;
-    border: 1px solid #bee3f8 !important;
-    border-left: 3px solid #63b3ed !important;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-left: 4px solid #007cba;
+    padding: 20px;
+    margin-top: 15px;
+    border-radius: 4px;
 }
 
+.wp-licensing-email-settings .renewal-settings label,
+.wp-licensing-email-settings .usage-tips-settings label {
+    color: #495057;
+    margin-right: 15px;
+}
+
+/* Variable Help Section */
 .wp-licensing-email-settings .email-variables-help {
-    background: linear-gradient(135deg, #e6f3ff 0%, #cce7ff 100%) !important;
-    color: #2d3748 !important;
-    border: 1px solid #bee3f8 !important;
-    box-shadow: 0 2px 8px rgba(49, 130, 206, 0.1) !important;
+    background: #e7f3ff;
+    border: 1px solid #b8daff;
+    border-radius: 6px;
+    padding: 25px;
+    margin-top: 30px;
+}
+
+.wp-licensing-email-settings .email-variables-help h3 {
+    color: #004085;
+    margin-top: 0;
+}
+
+.wp-licensing-email-settings .email-variables-help .description {
+    color: #004085;
+}
+
+.wp-licensing-email-settings .variables-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
 }
 
 .wp-licensing-email-settings .variable-item {
-    background: #ffffff !important;
-    border: 1px solid #e2e8f0 !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
-}
-
-.wp-licensing-email-settings .variable-item:hover {
-    background: #f7fafc !important;
-    border-color: #bee3f8 !important;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+    background: #ffffff;
+    border: 1px solid #b8daff;
+    border-radius: 4px;
+    padding: 12px;
+    color: #212529;
 }
 
 .wp-licensing-email-settings .variable-item code {
-    background: #e6f3ff !important;
-    color: #2b6cb0 !important;
-    border: 1px solid #bee3f8 !important;
+    background: #cce7ff;
+    color: #004085;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: 600;
 }
 
+/* Action Buttons */
 .wp-licensing-email-settings .email-actions {
-    background: linear-gradient(135deg, #f0fff4 0%, #e6fffa 100%) !important;
-    border: 1px solid #c6f6d5 !important;
-    border-left: 3px solid #48bb78 !important;
+    background: #f0f9ff;
+    border: 1px solid #b8daff;
+    border-left: 4px solid #0ea5e9;
+    padding: 20px;
+    margin-top: 20px;
+    border-radius: 4px;
 }
 
 .wp-licensing-email-settings .preview-email {
-    background: #4299e1 !important;
-    border-color: #4299e1 !important;
+    background: #0ea5e9;
+    border-color: #0ea5e9;
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 4px;
+    margin-right: 10px;
 }
 
 .wp-licensing-email-settings .preview-email:hover {
-    background: #3182ce !important;
-    box-shadow: 0 3px 10px rgba(66, 153, 225, 0.3) !important;
+    background: #0284c7;
+    border-color: #0284c7;
 }
 
 .wp-licensing-email-settings .test-email {
-    background: #48bb78 !important;
-    border-color: #48bb78 !important;
+    background: #10b981;
+    border-color: #10b981;
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 4px;
 }
 
 .wp-licensing-email-settings .test-email:hover {
-    background: #38a169 !important;
-    box-shadow: 0 3px 10px rgba(72, 187, 120, 0.3) !important;
+    background: #059669;
+    border-color: #059669;
 }
 
+/* Email Logs Table */
 .wp-licensing-email-settings .wp-list-table th {
-    background: linear-gradient(135deg, #e6f3ff 0%, #cce7ff 100%) !important;
-    color: #2d3748 !important;
+    background: #f8f9fa;
+    color: #212529;
+    border-bottom: 1px solid #dee2e6;
 }
 
+.wp-licensing-email-settings .wp-list-table td {
+    color: #495057;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.wp-licensing-email-settings .wp-list-table tr:hover {
+    background: #f8f9fa;
+}
+
+/* Email Type Badges */
+.wp-licensing-email-settings .email-type-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.wp-licensing-email-settings .email-type-welcome {
+    background: #d4edda;
+    color: #155724;
+}
+
+.wp-licensing-email-settings .email-type-renewal-reminder {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.wp-licensing-email-settings .email-type-grace-period {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.wp-licensing-email-settings .email-type-usage-tips {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+/* Modal Styling */
 .wp-licensing-email-settings .email-modal-header {
-    background: linear-gradient(135deg, #e6f3ff 0%, #cce7ff 100%) !important;
-    color: #2d3748 !important;
+    background: #f8f9fa;
+    color: #212529;
+    border-bottom: 1px solid #dee2e6;
 }
 
-/* Tab Content Display Control */
-.wp-licensing-email-settings .tab-content {
-    display: none !important;
+.wp-licensing-email-settings .email-modal-close {
+    color: #495057;
+    background: #e9ecef;
 }
 
-.wp-licensing-email-settings .tab-content.active {
-    display: block !important;
+.wp-licensing-email-settings .email-modal-close:hover {
+    background: #ced4da;
 }
 
-/* Force light theme override */
-.wp-licensing-email-settings * {
-    box-sizing: border-box;
+/* Responsive */
+@media (max-width: 768px) {
+    .wp-licensing-email-settings .variables-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .wp-licensing-email-settings .email-actions {
+        text-align: center;
+    }
+    
+    .wp-licensing-email-settings .preview-email,
+    .wp-licensing-email-settings .test-email {
+        display: block;
+        width: 100%;
+        margin: 5px 0;
+    }
 }
 </style>
