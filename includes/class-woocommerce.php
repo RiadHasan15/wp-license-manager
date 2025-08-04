@@ -101,6 +101,72 @@ class WP_Licensing_Manager_WooCommerce {
             'type' => 'number'
         ));
 
+        // Enhanced License Configuration Section
+        echo '<h4>' . __('Advanced License Settings', 'wp-licensing-manager') . '</h4>';
+        
+        // License Duration Dropdown
+        $duration_options = array(
+            '' => __('Use default expiry days (above)', 'wp-licensing-manager'),
+            '30' => __('30 days', 'wp-licensing-manager'),
+            '90' => __('90 days', 'wp-licensing-manager'),
+            '180' => __('180 days', 'wp-licensing-manager'),
+            '365' => __('1 year', 'wp-licensing-manager'),
+            '730' => __('2 years', 'wp-licensing-manager'),
+            '0' => __('Lifetime', 'wp-licensing-manager')
+        );
+
+        woocommerce_wp_select(array(
+            'id' => '_license_duration_preset',
+            'label' => __('License Duration Preset', 'wp-licensing-manager'),
+            'options' => $duration_options,
+            'description' => __('Quick duration presets (overrides expiry days above if selected)', 'wp-licensing-manager')
+        ));
+
+        // Grace Period Settings
+        woocommerce_wp_text_field(array(
+            'id' => '_license_grace_period',
+            'label' => __('Grace Period (Days)', 'wp-licensing-manager'),
+            'placeholder' => '0',
+            'description' => __('Additional days after expiry before license is deactivated (0 = immediate)', 'wp-licensing-manager'),
+            'type' => 'number',
+            'custom_attributes' => array(
+                'min' => '0',
+                'max' => '365'
+            )
+        ));
+
+        // Auto-renewal Checkbox
+        woocommerce_wp_checkbox(array(
+            'id' => '_license_auto_renewal',
+            'label' => __('Auto-Renewal Eligible', 'wp-licensing-manager'),
+            'description' => __('License can be automatically renewed if customer has active subscription', 'wp-licensing-manager')
+        ));
+
+        // Trial Period Configuration
+        woocommerce_wp_text_field(array(
+            'id' => '_license_trial_period',
+            'label' => __('Trial Period (Days)', 'wp-licensing-manager'),
+            'placeholder' => '0',
+            'description' => __('Free trial period before license activation (0 = no trial)', 'wp-licensing-manager'),
+            'type' => 'number',
+            'custom_attributes' => array(
+                'min' => '0',
+                'max' => '365'
+            )
+        ));
+
+        // Usage Limit Settings
+        woocommerce_wp_text_field(array(
+            'id' => '_license_usage_limit',
+            'label' => __('Usage Limit (API Calls)', 'wp-licensing-manager'),
+            'placeholder' => '0',
+            'description' => __('Maximum API validation calls per month (0 = unlimited)', 'wp-licensing-manager'),
+            'type' => 'number',
+            'custom_attributes' => array(
+                'min' => '0'
+            )
+        ));
+
         echo '</div>';
     }
 
@@ -201,6 +267,63 @@ class WP_Licensing_Manager_WooCommerce {
             echo '<input type="number" class="short" name="_license_max_activations" id="_license_max_activations" value="' . esc_attr($max_activations) . '" placeholder="1" />';
             echo '<span class="description">' . __('Maximum number of activations allowed', 'wp-licensing-manager') . '</span>';
             echo '</p>';
+            
+            // Enhanced License Fields - Fallback HTML
+            $duration_preset = get_post_meta($post->ID, '_license_duration_preset', true);
+            $grace_period = get_post_meta($post->ID, '_license_grace_period', true);
+            $auto_renewal = get_post_meta($post->ID, '_license_auto_renewal', true);
+            $trial_period = get_post_meta($post->ID, '_license_trial_period', true);
+            $usage_limit = get_post_meta($post->ID, '_license_usage_limit', true);
+            
+            echo '<h4>' . __('Advanced License Settings', 'wp-licensing-manager') . '</h4>';
+            
+            // Duration Preset Dropdown
+            echo '<p class="form-field _license_duration_preset_field">';
+            echo '<label for="_license_duration_preset">' . __('License Duration Preset', 'wp-licensing-manager') . '</label>';
+            echo '<select name="_license_duration_preset" id="_license_duration_preset" class="select short">';
+            $duration_options = array(
+                '' => __('Use default expiry days (above)', 'wp-licensing-manager'),
+                '30' => __('30 days', 'wp-licensing-manager'),
+                '90' => __('90 days', 'wp-licensing-manager'),
+                '180' => __('180 days', 'wp-licensing-manager'),
+                '365' => __('1 year', 'wp-licensing-manager'),
+                '730' => __('2 years', 'wp-licensing-manager'),
+                '0' => __('Lifetime', 'wp-licensing-manager')
+            );
+            foreach ($duration_options as $key => $value) {
+                echo '<option value="' . esc_attr($key) . '" ' . selected($duration_preset, $key, false) . '>' . esc_html($value) . '</option>';
+            }
+            echo '</select>';
+            echo '<span class="description">' . __('Quick duration presets (overrides expiry days above if selected)', 'wp-licensing-manager') . '</span>';
+            echo '</p>';
+            
+            // Grace Period
+            echo '<p class="form-field _license_grace_period_field">';
+            echo '<label for="_license_grace_period">' . __('Grace Period (Days)', 'wp-licensing-manager') . '</label>';
+            echo '<input type="number" class="short" name="_license_grace_period" id="_license_grace_period" value="' . esc_attr($grace_period) . '" placeholder="0" min="0" max="365" />';
+            echo '<span class="description">' . __('Additional days after expiry before license is deactivated (0 = immediate)', 'wp-licensing-manager') . '</span>';
+            echo '</p>';
+            
+            // Auto-renewal
+            echo '<p class="form-field _license_auto_renewal_field">';
+            echo '<label for="_license_auto_renewal">' . __('Auto-Renewal Eligible', 'wp-licensing-manager') . '</label>';
+            echo '<input type="checkbox" class="checkbox" name="_license_auto_renewal" id="_license_auto_renewal" value="yes" ' . checked($auto_renewal, 'yes', false) . ' />';
+            echo '<span class="description">' . __('License can be automatically renewed if customer has active subscription', 'wp-licensing-manager') . '</span>';
+            echo '</p>';
+            
+            // Trial Period
+            echo '<p class="form-field _license_trial_period_field">';
+            echo '<label for="_license_trial_period">' . __('Trial Period (Days)', 'wp-licensing-manager') . '</label>';
+            echo '<input type="number" class="short" name="_license_trial_period" id="_license_trial_period" value="' . esc_attr($trial_period) . '" placeholder="0" min="0" max="365" />';
+            echo '<span class="description">' . __('Free trial period before license activation (0 = no trial)', 'wp-licensing-manager') . '</span>';
+            echo '</p>';
+            
+            // Usage Limit
+            echo '<p class="form-field _license_usage_limit_field">';
+            echo '<label for="_license_usage_limit">' . __('Usage Limit (API Calls)', 'wp-licensing-manager') . '</label>';
+            echo '<input type="number" class="short" name="_license_usage_limit" id="_license_usage_limit" value="' . esc_attr($usage_limit) . '" placeholder="0" min="0" />';
+            echo '<span class="description">' . __('Maximum API validation calls per month (0 = unlimited)', 'wp-licensing-manager') . '</span>';
+            echo '</p>';
         }
 
         echo '</div>';
@@ -226,6 +349,40 @@ class WP_Licensing_Manager_WooCommerce {
 
         if (isset($_POST['_license_max_activations'])) {
             update_post_meta($post_id, '_license_max_activations', absint($_POST['_license_max_activations']));
+        }
+
+        // Save Enhanced License Fields
+        if (isset($_POST['_license_duration_preset'])) {
+            $duration_preset = sanitize_text_field($_POST['_license_duration_preset']);
+            // Validate the preset value
+            $valid_presets = array('', '30', '90', '180', '365', '730', '0');
+            if (in_array($duration_preset, $valid_presets)) {
+                update_post_meta($post_id, '_license_duration_preset', $duration_preset);
+            }
+        }
+
+        if (isset($_POST['_license_grace_period'])) {
+            $grace_period = absint($_POST['_license_grace_period']);
+            // Validate range (0-365 days)
+            if ($grace_period >= 0 && $grace_period <= 365) {
+                update_post_meta($post_id, '_license_grace_period', $grace_period);
+            }
+        }
+
+        $auto_renewal = isset($_POST['_license_auto_renewal']) ? 'yes' : 'no';
+        update_post_meta($post_id, '_license_auto_renewal', $auto_renewal);
+
+        if (isset($_POST['_license_trial_period'])) {
+            $trial_period = absint($_POST['_license_trial_period']);
+            // Validate range (0-365 days)
+            if ($trial_period >= 0 && $trial_period <= 365) {
+                update_post_meta($post_id, '_license_trial_period', $trial_period);
+            }
+        }
+
+        if (isset($_POST['_license_usage_limit'])) {
+            $usage_limit = absint($_POST['_license_usage_limit']);
+            update_post_meta($post_id, '_license_usage_limit', $usage_limit);
         }
     }
 
@@ -273,13 +430,9 @@ class WP_Licensing_Manager_WooCommerce {
                 continue;
             }
 
-            // Get license settings
-            $expiry_days = get_post_meta($product_id, '_license_expiry_days', true);
+            // Get license settings using enhanced fields
+            $expiry_days = wp_licensing_manager_get_product_license_duration($product_id);
             $max_activations = get_post_meta($product_id, '_license_max_activations', true);
-
-            if (empty($expiry_days)) {
-                $expiry_days = get_option('wp_licensing_manager_default_expiry_days', 365);
-            }
 
             if (empty($max_activations)) {
                 $max_activations = get_option('wp_licensing_manager_default_max_activations', 1);

@@ -235,8 +235,27 @@ class WP_Licensing_Manager_License_Manager {
             );
         }
 
-        // Check expiration
+        // Check expiration with grace period support
         if (wp_licensing_manager_is_license_expired($license->expires_at)) {
+            // Check if license is in grace period
+            if (function_exists('wp_licensing_manager_is_license_in_grace_period')) {
+                // We need to get the WooCommerce product ID for grace period check
+                // First try to find it from order or license metadata
+                $wc_product_id = $this->get_woocommerce_product_id_for_license($license);
+                
+                if ($wc_product_id && wp_licensing_manager_is_license_in_grace_period($license, $wc_product_id)) {
+                    // License is in grace period - allow usage but mark as expired
+                    $this->update_license($license->id, array('status' => 'expired'));
+                    
+                    return array(
+                        'valid' => true,
+                        'license' => $license,
+                        'grace_period' => true,
+                        'message' => 'License has expired but is in grace period'
+                    );
+                }
+            }
+            
             // Update status to expired
             $this->update_license($license->id, array('status' => 'expired'));
             
@@ -250,6 +269,42 @@ class WP_Licensing_Manager_License_Manager {
             'valid' => true,
             'license' => $license
         );
+    }
+
+    /**
+     * Get WooCommerce product ID for a license (for grace period checks)
+     *
+     * @param object $license
+     * @return int|null WooCommerce product ID or null if not found
+     */
+    private function get_woocommerce_product_id_for_license($license) {
+        global $wpdb;
+        
+        if (empty($license->order_id)) {
+            return null;
+        }
+        
+        // Get order items to find the WooCommerce product
+        if (!function_exists('wc_get_order')) {
+            return null;
+        }
+        
+        $order = wc_get_order($license->order_id);
+        if (!$order) {
+            return null;
+        }
+        
+        // Find the WooCommerce product that generated this license
+        foreach ($order->get_items() as $item) {
+            $is_licensed = get_post_meta($item->get_product_id(), '_is_licensed', true);
+            $license_product_id = get_post_meta($item->get_product_id(), '_license_product_id', true);
+            
+            if ($is_licensed === 'yes' && $license_product_id == $license->product_id) {
+                return $item->get_product_id();
+            }
+        }
+        
+        return null;
     }
 
     /**

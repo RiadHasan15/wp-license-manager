@@ -316,3 +316,47 @@
     vertical-align: middle;
     margin-right: 5px;
 }
+
+/* Enhanced License Fields Styling */
+.woocommerce_options_panel h4 {
+    margin: 20px 0 10px;
+    padding: 10px 0 5px;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+    color: #555;
+}
+
+.woocommerce_options_panel .form-field._license_duration_preset_field select,
+.woocommerce_options_panel .form-field._license_grace_period_field input,
+.woocommerce_options_panel .form-field._license_trial_period_field input,
+.woocommerce_options_panel .form-field._license_usage_limit_field input {
+    width: 200px;
+}
+
+.woocommerce_options_panel .form-field._license_auto_renewal_field {
+    margin-bottom: 15px;
+}
+
+.woocommerce_options_panel .form-field._license_auto_renewal_field .checkbox {
+    margin-right: 8px;
+}
+
+/* Enhanced field descriptions */
+.woocommerce_options_panel .description {
+    color: #666;
+    font-style: italic;
+    font-size: 12px;
+}
+
+/* Grace period and trial period specific styling */
+.form-field._license_grace_period_field input[type="number"],
+.form-field._license_trial_period_field input[type="number"] {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+}
+
+.form-field._license_grace_period_field input[type="number"]:focus,
+.form-field._license_trial_period_field input[type="number"]:focus {
+    background: #fff;
+    border-color: #007cba;
+}
