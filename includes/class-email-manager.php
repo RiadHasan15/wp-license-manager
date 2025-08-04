@@ -32,7 +32,8 @@ class WP_Licensing_Manager_Email_Manager {
     public function __construct() {
         $this->init_hooks();
         $this->init_default_settings();
-        $this->init_email_templates();
+        // Initialize templates on init action to avoid translation loading issues
+        add_action('init', array($this, 'init_email_templates'), 20);
     }
 
     /**
@@ -86,7 +87,7 @@ class WP_Licensing_Manager_Email_Manager {
     /**
      * Initialize default email templates
      */
-    private function init_email_templates() {
+    public function init_email_templates() {
         $this->email_templates = array(
             'welcome' => array(
                 'subject' => __('Welcome! Your License is Ready', 'wp-licensing-manager'),
@@ -609,6 +610,11 @@ The {site_name} Team', 'wp-licensing-manager');
     }
 
     private function get_email_template($type) {
+        // Ensure templates are initialized
+        if (empty($this->email_templates)) {
+            $this->init_email_templates();
+        }
+        
         $templates = get_option('wp_licensing_email_templates', $this->email_templates);
         return isset($templates[$type]) ? $templates[$type] : null;
     }
@@ -641,8 +647,8 @@ The {site_name} Team', 'wp-licensing-manager');
             return;
         }
 
-        wp_enqueue_script('wp-licensing-email-admin', WP_LICENSING_MANAGER_PLUGIN_URL . 'admin/js/email-admin.js', array('jquery'), WP_LICENSING_MANAGER_VERSION, true);
-        wp_enqueue_style('wp-licensing-email-admin', WP_LICENSING_MANAGER_PLUGIN_URL . 'admin/css/email-admin.css', array(), WP_LICENSING_MANAGER_VERSION);
+        wp_enqueue_script('wp-licensing-email-admin', WP_LICENSING_MANAGER_PLUGIN_URL . 'admin/js/email-admin.js', array('jquery'), WP_LICENSING_MANAGER_VERSION . '-' . time(), true);
+        wp_enqueue_style('wp-licensing-email-admin', WP_LICENSING_MANAGER_PLUGIN_URL . 'admin/css/email-admin.css', array(), WP_LICENSING_MANAGER_VERSION . '-' . time());
         
         wp_localize_script('wp-licensing-email-admin', 'wpLicensingEmailAdmin', array(
             'ajax_url' => admin_url('admin-ajax.php'),
@@ -656,6 +662,11 @@ The {site_name} Team', 'wp-licensing-manager');
     }
 
     public function admin_page() {
+        // Ensure templates are initialized before loading the admin page
+        if (empty($this->email_templates)) {
+            $this->init_email_templates();
+        }
+        
         if (isset($_POST['submit']) && wp_verify_nonce($_POST['wp_licensing_email_nonce'], 'wp_licensing_email_settings')) {
             $this->save_settings();
             echo '<div class="notice notice-success"><p>' . __('Settings saved successfully!', 'wp-licensing-manager') . '</p></div>';
@@ -764,14 +775,13 @@ The {site_name} Team', 'wp-licensing-manager');
         // Save email templates
         $templates = array();
         foreach ($this->email_templates as $type => $default_template) {
-            if (isset($_POST['template_' . $type . '_enabled'])) {
-                $templates[$type] = array(
-                    'enabled' => isset($_POST['template_' . $type . '_enabled']),
-                    'subject' => sanitize_text_field($_POST['template_' . $type . '_subject']),
-                    'heading' => sanitize_text_field($_POST['template_' . $type . '_heading']),
-                    'content' => wp_kses_post($_POST['template_' . $type . '_content']),
-                );
-            }
+            // Always save the template, regardless of enabled status
+            $templates[$type] = array(
+                'enabled' => isset($_POST['template_' . $type . '_enabled']),
+                'subject' => isset($_POST['template_' . $type . '_subject']) ? sanitize_text_field($_POST['template_' . $type . '_subject']) : $default_template['subject'],
+                'heading' => isset($_POST['template_' . $type . '_heading']) ? sanitize_text_field($_POST['template_' . $type . '_heading']) : $default_template['heading'],
+                'content' => isset($_POST['template_' . $type . '_content']) ? wp_kses_post($_POST['template_' . $type . '_content']) : $default_template['content'],
+            );
         }
         
         update_option('wp_licensing_email_templates', $templates);
