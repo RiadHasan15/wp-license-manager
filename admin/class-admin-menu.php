@@ -72,6 +72,33 @@ class WP_Licensing_Manager_Admin_Menu {
             'wp-licensing-manager-settings',
             array($this, 'settings_page')
         );
+
+        // Add database repair submenu (only if tables are missing)
+        global $wpdb;
+        $tables_missing = false;
+        $tables_to_check = array(
+            $wpdb->prefix . 'licenses',
+            $wpdb->prefix . 'license_products', 
+            $wpdb->prefix . 'license_activations'
+        );
+        
+        foreach ($tables_to_check as $table) {
+            if ($wpdb->get_var("SHOW TABLES LIKE '$table'") != $table) {
+                $tables_missing = true;
+                break;
+            }
+        }
+        
+        if ($tables_missing) {
+            add_submenu_page(
+                'wp-licensing-manager',
+                __('🔧 Database Repair', 'wp-licensing-manager'),
+                __('🔧 Database Repair', 'wp-licensing-manager'),
+                'manage_options',
+                'wp-licensing-manager-repair',
+                array($this, 'database_repair_page')
+            );
+        }
     }
 
     /**
@@ -347,5 +374,12 @@ class WP_Licensing_Manager_Admin_Menu {
         $integration_code = $updates->generate_integration_code($product_slug);
 
         wp_send_json_success($integration_code);
+    }
+
+    /**
+     * Database repair page
+     */
+    public function database_repair_page() {
+        include WP_LICENSING_MANAGER_PLUGIN_DIR . 'admin/views/database-repair-admin.php';
     }
 }

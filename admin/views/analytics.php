@@ -90,7 +90,7 @@ $product_stats = $wpdb->get_results(
                 foreach ($license_stats as $stat) {
                     $total_licenses += $stat->count;
                 }
-                echo esc_html(number_format($total_licenses));
+                echo esc_html(number_format($total_licenses ?: 0));
                 ?>
             </div>
         </div>
@@ -106,7 +106,7 @@ $product_stats = $wpdb->get_results(
                         break;
                     }
                 }
-                echo esc_html(number_format($active_licenses));
+                echo esc_html(number_format($active_licenses ?: 0));
                 ?>
             </div>
         </div>
@@ -114,14 +114,14 @@ $product_stats = $wpdb->get_results(
         <div class="wp-licensing-stat-card">
             <h3><?php esc_html_e('Total Activations', 'wp-licensing-manager'); ?></h3>
             <div class="wp-licensing-stat-number">
-                <?php echo esc_html(number_format($activation_stats['total_activations'])); ?>
+                <?php echo esc_html(number_format($activation_stats['total_activations'] ?: 0)); ?>
             </div>
         </div>
 
         <div class="wp-licensing-stat-card">
             <h3><?php esc_html_e('Today\'s Activations', 'wp-licensing-manager'); ?></h3>
             <div class="wp-licensing-stat-number">
-                <?php echo esc_html(number_format($activation_stats['activations_today'])); ?>
+                <?php echo esc_html(number_format($activation_stats['activations_today'] ?: 0)); ?>
             </div>
         </div>
     </div>
@@ -144,8 +144,8 @@ $product_stats = $wpdb->get_results(
                             <?php foreach ($license_stats as $stat): ?>
                                 <tr>
                                     <td><?php echo wp_licensing_manager_format_status($stat->status); ?></td>
-                                    <td><?php echo esc_html(number_format($stat->count)); ?></td>
-                                    <td><?php echo esc_html(round(($stat->count / $total_licenses) * 100, 1)); ?>%</td>
+                                    <td><?php echo esc_html(number_format($stat->count ?: 0)); ?></td>
+                                    <td><?php echo esc_html($total_licenses > 0 ? round(($stat->count / $total_licenses) * 100, 1) : 0); ?>%</td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
@@ -175,9 +175,9 @@ $product_stats = $wpdb->get_results(
                                 <?php foreach ($product_stats as $stat): ?>
                                     <tr>
                                         <td><strong><?php echo esc_html($stat->name); ?></strong></td>
-                                        <td><?php echo esc_html(number_format($stat->total_licenses)); ?></td>
-                                        <td><?php echo esc_html(number_format($stat->active_licenses)); ?></td>
-                                        <td><?php echo esc_html(number_format($stat->total_activations)); ?></td>
+                                        <td><?php echo esc_html(number_format($stat->total_licenses ?: 0)); ?></td>
+                                        <td><?php echo esc_html(number_format($stat->active_licenses ?: 0)); ?></td>
+                                        <td><?php echo esc_html(number_format($stat->total_activations ?: 0)); ?></td>
                                     </tr>
                                 <?php endforeach; ?>
                             <?php endif; ?>
@@ -270,7 +270,7 @@ $product_stats = $wpdb->get_results(
                                 <?php foreach ($activation_stats['top_domains'] as $domain): ?>
                                     <tr>
                                         <td><?php echo esc_html($domain->domain); ?></td>
-                                        <td><?php echo esc_html(number_format($domain->activation_count)); ?></td>
+                                        <td><?php echo esc_html(number_format($domain->activation_count ?: 0)); ?></td>
                                     </tr>
                                 <?php endforeach; ?>
                             <?php endif; ?>

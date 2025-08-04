@@ -183,8 +183,23 @@ class WP_Licensing_Manager {
      * Plugin activation
      */
     public function activate() {
+        // Ensure we can create tables
         $this->create_tables();
         $this->create_directories();
+        
+        // Verify tables were created
+        global $wpdb;
+        $required_tables = array(
+            $wpdb->prefix . 'licenses',
+            $wpdb->prefix . 'license_products', 
+            $wpdb->prefix . 'license_activations'
+        );
+        
+        foreach ($required_tables as $table) {
+            if ($wpdb->get_var("SHOW TABLES LIKE '$table'") != $table) {
+                error_log("WP Licensing Manager: Failed to create table $table");
+            }
+        }
         
         // Set default options
         $default_options = array(
